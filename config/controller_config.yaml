@@ -1,0 +1,10 @@
+
+rel_pose: [2,2,0]
+
+Kx: 3.4
+Ky: 10 
+Kw: 5.5
+target_pose_topic: /mir1/ground_truth
+target_vel_topic: /mir1/ground_truth
+actual_pose_topic: /mir2/ground_truth
+cmd_vel_topic: /mir2/mobile_base_controller/cmd_vel

@@ -33,17 +33,14 @@ class lyapunov_controller_node:
 
 
     def config(self):
-        self.Kx = 3.4#3.4
-        self.Ky = 10 #10
-        self.Kw = 5.5 #2.5
-        #self.master_pose_topic = "/mir1/mobile_base_controller/odom"
-        #self.master_vel_topic = "/mir1/mobile_base_controller/odom"
-        #self.follower_pose_topic = "/mir2/mobile_base_controller/odom"
-        self.master_pose_topic = "/mir1/ground_truth"
-        self.master_vel_topic = "/mir1/ground_truth"
-        self.follower_pose_topic = "/mir2/ground_truth"
-        self.follower_cmd_vel_topic = "/mir2/mobile_base_controller/cmd_vel"
-        self.rel_pose = [1.8,5,0]
+        self.Kx = rospy.get_param('~Kx')
+        self.Ky = rospy.get_param('~Ky')
+        self.Kw = rospy.get_param('~Kw')
+        self.master_pose_topic = rospy.get_param('~target_pose_topic')
+        self.master_vel_topic = rospy.get_param('~target_vel_topic')
+        self.follower_pose_topic = rospy.get_param('~actual_pose_topic')
+        self.follower_cmd_vel_topic = rospy.get_param('~cmd_vel_topic')
+        self.rel_pose = rospy.get_param('~rel_pose')
 
 
     def act_pose_cb(self,data):
@@ -65,7 +62,7 @@ class lyapunov_controller_node:
             
             ex = self.target_pose.position.x - act_pose.position.x - rel[0]
             ey = self.target_pose.position.y - act_pose.position.y - rel[1]
-            
+
 
             self.e_x = R_act[0,0] * ex + R_act[0,1] * ey 
             self.e_y = R_act[1,0] * ex + R_act[1,1] * ey
