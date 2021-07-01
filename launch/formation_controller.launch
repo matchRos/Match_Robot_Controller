@@ -1,7 +1,7 @@
 <launch>
   <!-- Basic launch file for one robot in the match_world_common map-->
 
-    <node name="lyapunov_node" type="lyapunov_node.py" pkg="Match_Robot_Controller" ns="mir100">
+    <node name="lyapunov_node" type="lyapunov_node.py" pkg="Match_Robot_Controller" ns="mir100" output="screen">
             <rosparam command="load" file="$(find Match_Robot_Controller)/config/controller_config.yaml"/>
     </node>
 

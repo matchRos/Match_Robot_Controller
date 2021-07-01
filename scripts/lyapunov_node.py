@@ -7,6 +7,7 @@ import tf
 import geometry_msgs
 import math
 from tf import transformations
+from rostopic import get_topic_type
 
 
 class lyapunov_controller_node:
@@ -19,20 +20,25 @@ class lyapunov_controller_node:
         self.target_pose = Pose()
         self.target_pose = float("Inf")
         self.controller_out = Twist()
+        self.e_x_i = 0
+        self.e_y_i = 0
+        self.e_w_i = 0
 
-
+        self.callback_selector()
         rospy.Subscriber(self.follower_pose_topic, Odometry, self.act_pose_cb)
-        rospy.Subscriber(self.master_pose_topic, Odometry, self.target_pose_cb)
-        rospy.Subscriber(self.master_vel_topic, Odometry, self.target_vel_cb)
+        
         self.pub = rospy.Publisher(self.follower_cmd_vel_topic, Twist, queue_size=10)
 
         rospy.spin()
 
 
     def config(self):
-        self.Kx = rospy.get_param('~Kx')
-        self.Ky = rospy.get_param('~Ky')
-        self.Kw = rospy.get_param('~Kw')
+        self.KPx = rospy.get_param('~KPx')
+        self.KPy = rospy.get_param('~KPy')
+        self.KPw = rospy.get_param('~KPw')
+        self.KIw = rospy.get_param('~KIw')
+        self.KIx = rospy.get_param('~KIx')
+
         self.master_pose_topic = rospy.get_param('~target_pose_topic')
         self.master_vel_topic = rospy.get_param('~target_vel_topic')
         self.follower_pose_topic = rospy.get_param('~actual_pose_topic')
@@ -61,22 +67,45 @@ class lyapunov_controller_node:
 
             e_x = R_act[0,0] * ex + R_act[0,1] * ey #  error in x (local frame)
             e_y = R_act[1,0] * ex + R_act[1,1] * ey #  error in y (local frame)
-
+            self.e_x_i = 0.9*self.e_x_i + e_x
+            self.e_y_i = 0.9*self.e_y_i + e_y
+            self.e_w_i = 0.9*self.e_w_i + e_w
 
             v_d = math.sqrt(self.target_vel.linear.x**2 + self.target_vel.linear.y**2)
             w_d = self.target_vel.angular.z
 
-            self.controller_out.linear.x = self.Kx * e_x + v_d * math.cos(e_w)
-            self.controller_out.angular.z = w_d + self.Ky  * e_y + self.Kw * math.sin(e_w)
+            self.controller_out.linear.x = self.KPx * e_x + v_d * math.cos(e_w) + self.KIx * self.e_x_i
+            self.controller_out.angular.z = w_d + self.KPy  * e_y + self.KPw * math.sin(e_w) + self.KIw * self.e_w_i 
             self.pub.publish(self.controller_out)
 
             
         else:
             rospy.loginfo_throttle(2, "no target pose")
 
+    
+    def callback_selector(self):
+                
+        topic_type =get_topic_type(self.master_pose_topic)
+        if topic_type[0] == "geometry_msgs/Pose":
+            rospy.Subscriber(self.master_pose_topic, Pose, self.target_pose_Pose_cb)
+        elif topic_type[0] == "nav_msgs/Odometry":
+            rospy.Subscriber(self.master_pose_topic, Odometry, self.target_pose_cb)
+            
+        topic_type =get_topic_type(self.master_vel_topic)
+        if topic_type[0] == "geometry_msgs/Twist":
+            rospy.Subscriber(self.master_vel_topic, Twist, self.target_vel_Twist_cb)
+        elif topic_type[0] == "nav_msgs/Odometry":
+            rospy.Subscriber(self.master_vel_topic, Odometry, self.target_vel_cb)
+            
+    
     def target_pose_cb(self,data):
         self.target_pose = data.pose.pose
         
+    def target_pose_Pose_cb(self,data):
+        self.target_pose = data
+        
+    def target_vel_Twist_cb(self,data):
+        self.target_vel = data
 
     def target_vel_cb(self,data):
         self.target_vel = data.twist.twist
