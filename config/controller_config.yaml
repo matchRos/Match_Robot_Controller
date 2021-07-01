@@ -7,6 +7,9 @@ KPw: 5.5             # P gain for errors in theta
 KIw: 0.01            # I gain for errors in theta 
 KIx: 0.001           # I gain for errors in x 
 
+KIx_decay: 0.01   # rate with witch the integral component decays
+KIw_decay: 0.01   # rate with witch the integral component decays
+
 #target_pose_topic: /mir1/ground_truth
 #target_vel_topic: /mir1/ground_truth
 target_pose_topic: /virtual_master/master_pose

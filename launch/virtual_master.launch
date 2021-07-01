@@ -1,8 +1,9 @@
 <launch>
-  <!-- Basic launch file for one robot in the match_world_common map-->
 
-    <node name="virtual_master" type="virtual_master.py" pkg="Match_Robot_Controller" ns="mir100">
+
+    <node name="virtual_master" type="virtual_master.py" pkg="Match_Robot_Controller" >
             <rosparam command="load" file="$(find Match_Robot_Controller)/config/virtual_master_config.yaml"/>
     </node>
+
 
 </launch>

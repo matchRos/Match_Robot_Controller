@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+from operator import mod
 import rospy
 from geometry_msgs.msg import PoseWithCovarianceStamped, Pose, Twist
 from nav_msgs.msg import Odometry
@@ -38,6 +39,8 @@ class lyapunov_controller_node:
         self.KPw = rospy.get_param('~KPw')
         self.KIw = rospy.get_param('~KIw')
         self.KIx = rospy.get_param('~KIx')
+        self.KIx_decay = rospy.get_param('~KIx_decay')
+        self.KIw_decay = rospy.get_param('~KIw_decay')
 
         self.master_pose_topic = rospy.get_param('~target_pose_topic')
         self.master_vel_topic = rospy.get_param('~target_vel_topic')
@@ -55,7 +58,7 @@ class lyapunov_controller_node:
             R_act = transformations.euler_matrix(act_w[0],act_w[1],-act_w[2])
             R_target = transformations.euler_matrix(target_w[0],target_w[1],target_w[2])
 
-            rel = [0.0,0.0]
+            rel = [0,0,0]
             rel[0] = R_target[0,0] * self.rel_pose[0] + R_target[0,1] * self.rel_pose[1] 
             rel[1] = R_target[1,0] * self.rel_pose[0] + R_target[1,1] * self.rel_pose[1] 
 
@@ -67,12 +70,19 @@ class lyapunov_controller_node:
 
             e_x = R_act[0,0] * ex + R_act[0,1] * ey #  error in x (local frame)
             e_y = R_act[1,0] * ex + R_act[1,1] * ey #  error in y (local frame)
-            self.e_x_i = 0.9*self.e_x_i + e_x
-            self.e_y_i = 0.9*self.e_y_i + e_y
-            self.e_w_i = 0.9*self.e_w_i + e_w
+            self.e_x_i = (1-self.KIx_decay)*self.e_x_i + e_x
+            self.e_w_i = (1-self.KIw_decay)*self.e_w_i + e_w
 
             v_d = math.sqrt(self.target_vel.linear.x**2 + self.target_vel.linear.y**2)
             w_d = self.target_vel.angular.z
+            print(e_w)
+            e_w = e_w % (2*math.pi) 
+            # if(e_w>=0.5*math.pi):
+            #     e_w = e_w - math.pi;
+            #     v_d = -v_d;    
+            # elif(e_w<= -.5*math.pi):
+            #     e_w = e_w + math.pi;
+            #     v_d = -v_d;            
 
             self.controller_out.linear.x = self.KPx * e_x + v_d * math.cos(e_w) + self.KIx * self.e_x_i
             self.controller_out.angular.z = w_d + self.KPy  * e_y + self.KPw * math.sin(e_w) + self.KIw * self.e_w_i 
