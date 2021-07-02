@@ -3,14 +3,14 @@
 
   <arg name="robot1_name"  default="mir1"/>
   <arg name="robot2_name"  default="mir2"/>
+  <arg name="robot3_name"  default="mir3"/>
 
 
   <include file="$(find Match_Robot_Controller)/launch/track_virtual_master.launch" ns="$(arg robot1_name)" pass_all_args="true">
       <arg name="actual_pose_topic"     default="/mir1/ground_truth" />
       <arg name="cmd_vel_topic"         default="/mir1/mobile_base_controller/cmd_vel" />
-      <arg name="rel_pose"              default="[0.0, 0.0 ,0.0]" /> 
-      <arg name="robot_name"            default="$(arg robot1_name)" />     
-      <arg name="rel_x"                 default="1" />   
+      <arg name="rel_pose"              default="[0.0, -2 ,0.0]" /> 
+      <arg name="robot_name"            default="$(arg robot1_name)" />       
   </include>
 
   <include file="$(find Match_Robot_Controller)/launch/track_virtual_master.launch" ns="$(arg robot2_name)" pass_all_args="true">
@@ -20,6 +20,14 @@
       <arg name="robot_name"            default="$(arg robot2_name)" />   
       <arg name="rel_x"                 default="-1" />     
   </include>
+
+  <!--include file="$(find Match_Robot_Controller)/launch/track_virtual_master.launch" ns="$(arg robot3_name)" pass_all_args="true">
+      <arg name="actual_pose_topic"     default="/mir3/ground_truth" />
+      <arg name="cmd_vel_topic"         default="/mir3/mobile_base_controller/cmd_vel" />
+      <arg name="rel_pose"              default="[2,0.0,0.0]" /> 
+      <arg name="robot_name"            default="$(arg robot3_name)" />   
+      <arg name="rel_x"                 default="-1" />     
+  </include-->
 
 
 

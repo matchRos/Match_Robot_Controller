@@ -67,10 +67,6 @@ class lyapunov_controller_node:
             ex = self.target_pose.position.x - act_pose.position.x - rel[0] # error in x (global frame)
             ey = self.target_pose.position.y - act_pose.position.y - rel[1] # error in y (global frame)
             e_w = target_w[2]- act_w[2]    # angular error
-            #rospy.loginfo_throttle(1, [target_w[2], act_w[2] , self.target_pose.position.x, act_pose.position.x])
-            #rospy.loginfo_throttle(1, ["target_w" ,target_w[2]])
-            #rospy.loginfo_throttle(1, ["act_w" ,act_w[2]])
-            #rospy.loginfo_throttle(1, ["e_w" ,e_w])
             e_x = R_act[0,0] * ex + R_act[0,1] * ey #  error in x (local frame)
             e_y = R_act[1,0] * ex + R_act[1,1] * ey #  error in y (local frame)
             self.e_x_i = (1-self.KIx_decay)*self.e_x_i + e_x
@@ -87,8 +83,6 @@ class lyapunov_controller_node:
             elif(e_w<= -.5*math.pi):
                  e_w = e_w + math.pi;
                  v_d = -v_d;            
-
-            #rospy.loginfo_throttle(1, ["e_w_corr" ,e_w])
             
             self.controller_out.linear.x = self.KPx * e_x + v_d * math.cos(e_w) + self.KIx * self.e_x_i
             self.controller_out.angular.z = w_d + self.KPy * v_d * e_y + self.KPw * math.sin(e_w) + self.KIw * self.e_w_i 
