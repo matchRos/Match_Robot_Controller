@@ -2,15 +2,17 @@
   <!-- Basic launch file for one robot in the match_world_common map-->
     <arg name="actual_pose_topic"  default="/mir2/ground_truth"/>
     <arg name="cmd_vel_topic"  default="/mir2/mobile_base_controller/cmd_vel"/>
-    <arg name="rel_pose"  default="[0,2,0]"/>
+    <arg name="rel_pose"  default="[0,3,0]"/>
     <arg name="robot_name"  default="mir2"/>
+    <arg name="rel_x"  default="1"/>
 
 
     <node name="lyapunov_node" type="lyapunov_node.py" pkg="Match_Robot_Controller"  output="screen">
             <rosparam command="load" file="$(find Match_Robot_Controller)/config/controller_config.yaml"/>
             <param name="actual_pose_topic" value="$(arg actual_pose_topic)" />
             <param name="cmd_vel_topic" value="$(arg cmd_vel_topic)" />
-            <rosparam param="rel_pose" value="$(arg rel_pose)" />
+            <param name="rel_x" value="$(arg rel_x)" />
+            <rosparam param="rel_pose" subst_value="True">$(arg rel_pose)</rosparam>
     </node>
 
 

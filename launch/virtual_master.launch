@@ -1,7 +1,7 @@
 <launch>
 
 
-    <node name="virtual_master" type="virtual_master.py" pkg="Match_Robot_Controller" >
+    <node name="virtual_master" type="virtual_master.py" pkg="Match_Robot_Controller" output="screen">
             <rosparam command="load" file="$(find Match_Robot_Controller)/config/virtual_master_config.yaml"/>
     </node>
 

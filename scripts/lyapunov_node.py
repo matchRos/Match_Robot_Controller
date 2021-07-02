@@ -17,7 +17,6 @@ class lyapunov_controller_node:
         rospy.init_node("lyapunov_controller_node")
         rospy.loginfo("lyapunov controller running")
         self.config()
-        #self.act_pose = Odometry()
         self.target_pose = Pose()
         self.target_pose = float("Inf")
         self.controller_out = Twist()
@@ -26,6 +25,7 @@ class lyapunov_controller_node:
         self.e_w_i = 0
 
         self.callback_selector()
+        rospy.sleep(0.1)
         rospy.Subscriber(self.follower_pose_topic, Odometry, self.act_pose_cb)
         
         self.pub = rospy.Publisher(self.follower_cmd_vel_topic, Twist, queue_size=10)
@@ -47,6 +47,8 @@ class lyapunov_controller_node:
         self.follower_pose_topic = rospy.get_param('~actual_pose_topic')
         self.follower_cmd_vel_topic = rospy.get_param('~cmd_vel_topic')
         self.rel_pose = rospy.get_param('~rel_pose')
+                
+               
 
 
     def act_pose_cb(self,data):
@@ -54,7 +56,6 @@ class lyapunov_controller_node:
             act_pose = data.pose.pose
             act_w = tf.transformations.euler_from_quaternion((act_pose.orientation.x,act_pose.orientation.y,act_pose.orientation.z,act_pose.orientation.w))
             target_w = tf.transformations.euler_from_quaternion((self.target_pose.orientation.x,self.target_pose.orientation.y,self.target_pose.orientation.z,self.target_pose.orientation.w))
-
             R_act = transformations.euler_matrix(act_w[0],act_w[1],-act_w[2])
             R_target = transformations.euler_matrix(target_w[0],target_w[1],target_w[2])
 
@@ -66,8 +67,10 @@ class lyapunov_controller_node:
             ex = self.target_pose.position.x - act_pose.position.x - rel[0] # error in x (global frame)
             ey = self.target_pose.position.y - act_pose.position.y - rel[1] # error in y (global frame)
             e_w = target_w[2]- act_w[2]    # angular error
-
-
+            #rospy.loginfo_throttle(1, [target_w[2], act_w[2] , self.target_pose.position.x, act_pose.position.x])
+            #rospy.loginfo_throttle(1, ["target_w" ,target_w[2]])
+            #rospy.loginfo_throttle(1, ["act_w" ,act_w[2]])
+            #rospy.loginfo_throttle(1, ["e_w" ,e_w])
             e_x = R_act[0,0] * ex + R_act[0,1] * ey #  error in x (local frame)
             e_y = R_act[1,0] * ex + R_act[1,1] * ey #  error in y (local frame)
             self.e_x_i = (1-self.KIx_decay)*self.e_x_i + e_x
@@ -75,17 +78,20 @@ class lyapunov_controller_node:
 
             v_d = math.sqrt(self.target_vel.linear.x**2 + self.target_vel.linear.y**2)
             w_d = self.target_vel.angular.z
-            print(e_w)
+            
+            
             e_w = e_w % (2*math.pi) 
-            # if(e_w>=0.5*math.pi):
-            #     e_w = e_w - math.pi;
-            #     v_d = -v_d;    
-            # elif(e_w<= -.5*math.pi):
-            #     e_w = e_w + math.pi;
-            #     v_d = -v_d;            
+            if(e_w>=0.5*math.pi):
+                 e_w = e_w - math.pi;
+                 v_d = -v_d;    
+            elif(e_w<= -.5*math.pi):
+                 e_w = e_w + math.pi;
+                 v_d = -v_d;            
 
+            #rospy.loginfo_throttle(1, ["e_w_corr" ,e_w])
+            
             self.controller_out.linear.x = self.KPx * e_x + v_d * math.cos(e_w) + self.KIx * self.e_x_i
-            self.controller_out.angular.z = w_d + self.KPy  * e_y + self.KPw * math.sin(e_w) + self.KIw * self.e_w_i 
+            self.controller_out.angular.z = w_d + self.KPy * v_d * e_y + self.KPw * math.sin(e_w) + self.KIw * self.e_w_i 
             self.pub.publish(self.controller_out)
 
             
@@ -116,7 +122,7 @@ class lyapunov_controller_node:
         
     def target_vel_Twist_cb(self,data):
         self.target_vel = data
-
+        
     def target_vel_cb(self,data):
         self.target_vel = data.twist.twist
 
