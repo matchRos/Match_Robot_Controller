@@ -1,0 +1,19 @@
+
+rel_pose: [1,0,0]    # position relative to the leader
+
+KPx: 3.4             # P gain for errors in x direction
+KPy: 10              # P gain for errors in y direction
+KPw: 2             # P gain for errors in theta 
+KIw: 0.0           # I gain for errors in theta 
+KIx: 0.01           # I gain for errors in x 
+
+KIx_decay: 0.1   # rate with witch the integral component decays
+KIw_decay: 0.1   # rate with witch the integral component decays
+
+#target_pose_topic: /mir1/ground_truth
+#target_vel_topic: /mir1/ground_truth
+target_pose_topic: /virtual_master/master_pose
+target_vel_topic: /virtual_master/master_vel
+
+actual_pose_topic: /mir2/ground_truth
+cmd_vel_topic: /mir2/mobile_base_controller/cmd_vel
