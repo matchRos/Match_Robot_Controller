@@ -2,7 +2,7 @@
 
 from operator import mod
 import rospy
-from geometry_msgs.msg import PoseWithCovarianceStamped, Pose, Twist
+from geometry_msgs.msg import PoseWithCovarianceStamped, Pose, Twist, PoseStamped, TwistStamped
 from nav_msgs.msg import Odometry
 import tf
 import geometry_msgs
@@ -98,12 +98,16 @@ class lyapunov_controller_node:
         topic_type =get_topic_type(self.master_pose_topic)
         if topic_type[0] == "geometry_msgs/Pose":
             rospy.Subscriber(self.master_pose_topic, Pose, self.target_pose_Pose_cb)
+        if topic_type[0] == "geometry_msgs/PoseStamped":
+                rospy.Subscriber(self.master_pose_topic, PoseStamped, self.target_pose_Pose_Stamped_cb)
         elif topic_type[0] == "nav_msgs/Odometry":
             rospy.Subscriber(self.master_pose_topic, Odometry, self.target_pose_cb)
             
         topic_type =get_topic_type(self.master_vel_topic)
         if topic_type[0] == "geometry_msgs/Twist":
             rospy.Subscriber(self.master_vel_topic, Twist, self.target_vel_Twist_cb)
+        if topic_type[0] == "geometry_msgs/TwistStamped":
+                rospy.Subscriber(self.master_vel_topic, TwistStamped, self.target_vel_Twist_Stamped_cb)
         elif topic_type[0] == "nav_msgs/Odometry":
             rospy.Subscriber(self.master_vel_topic, Odometry, self.target_vel_cb)
             
@@ -114,11 +118,17 @@ class lyapunov_controller_node:
     def target_pose_Pose_cb(self,data):
         self.target_pose = data
         
+    def target_pose_Pose_Stamped_cb(self,data):
+        self.target_pose = data.pose
+           
     def target_vel_Twist_cb(self,data):
         self.target_vel = data
         
     def target_vel_cb(self,data):
         self.target_vel = data.twist.twist
+        
+    def target_vel_Twist_Stamped_cb(self,data):
+        self.target_vel = data.twist
 
 
 if __name__=="__main__":
