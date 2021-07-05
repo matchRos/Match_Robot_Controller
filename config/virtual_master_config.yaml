@@ -1,6 +1,0 @@
-rate : 50
-
-set_pose_topic: /virtual_master/set_pose
-cmd_vel_topic: /virtual_master/cmd_vel
-master_pose_topic: /virtual_master/master_pose
-master_vel_topic: /virtual_master/master_vel
