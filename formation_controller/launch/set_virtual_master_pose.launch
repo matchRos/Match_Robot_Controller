@@ -1,0 +1,19 @@
+<launch>
+
+
+    <arg name="robot1_name"  default="mir100"/>
+    <arg name="master_name"  default="virtual_master"/>
+    <arg name="set_pose_topic"  default="/virtual_master/set_pose"/>
+    <arg name="follower_pose_topic"  default="/robot_pose_stamped"/>
+    <arg name="rel_pose"  default="[0.0,0.0,0.0]"/>
+    
+    
+    <node name="set_virtual_master_pose" type="set_virtual_master_pose.py" pkg="formation_controller" ns="virtual_master"  output="screen">
+            <rosparam command="load" file="$(find formation_controller)/config/set_virtual_master_config.yaml"/>
+            <param name="set_pose_topic" value="$(arg set_pose_topic)" />
+            <param name="follower_pose_topic" value="$(arg follower_pose_topic)" />
+            <rosparam param="rel_pose" subst_value="True">$(arg rel_pose)</rosparam>
+    </node>
+
+    
+</launch>
