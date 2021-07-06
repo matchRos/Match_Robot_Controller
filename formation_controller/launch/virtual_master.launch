@@ -3,7 +3,7 @@
     <arg name="set_pose_topic" default="/virtual_master/set_pose"/>
     <arg name="cmd_vel_topic" default="/virtual_master/cmd_vel"/>
     <arg name="master_pose_topic" default="/virtual_master/master_pose"/>
-    <arg name="master_vel_topic" default="/virtual_master/master_vel"/>
+    <arg name="master_vel_topic" default="/virtual_mastermaster_vel"/>
 
     <node name="virtual_master" type="virtual_master.py" pkg="formation_controller" output="screen">
             <rosparam command="load" file="$(find formation_controller)/config/virtual_master_config.yaml"/>

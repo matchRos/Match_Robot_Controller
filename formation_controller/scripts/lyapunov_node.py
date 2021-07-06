@@ -19,16 +19,16 @@ class lyapunov_controller_node:
         self.config()
         self.target_pose = Pose()
         self.target_pose = float("Inf")
-        self.controller_out = Twist()
+        self.controller_out = TwistStamped()
         self.e_x_i = 0
         self.e_y_i = 0
         self.e_w_i = 0
 
         self.callback_selector()
         rospy.sleep(0.1)
-        rospy.Subscriber(self.follower_pose_topic, Odometry, self.act_pose_cb)
+        rospy.Subscriber(self.follower_pose_topic, PoseStamped, self.act_pose_cb)
         
-        self.pub = rospy.Publisher(self.follower_cmd_vel_topic, Twist, queue_size=10)
+        self.pub = rospy.Publisher(self.follower_cmd_vel_topic, TwistStamped, queue_size=10)
 
         rospy.spin()
 
@@ -47,13 +47,15 @@ class lyapunov_controller_node:
         self.follower_pose_topic = rospy.get_param('~actual_pose_topic')
         self.follower_cmd_vel_topic = rospy.get_param('~cmd_vel_topic')
         self.rel_pose = rospy.get_param('~rel_pose')
+        self.max_vel = rospy.get_param('~max_vel')
+        self.max_w = rospy.get_param('~max_w')
                 
                
 
 
     def act_pose_cb(self,data):
         if self.target_pose != float("Inf"):
-            act_pose = data.pose.pose
+            act_pose = data.pose
             act_w = tf.transformations.euler_from_quaternion((act_pose.orientation.x,act_pose.orientation.y,act_pose.orientation.z,act_pose.orientation.w))
             target_w = tf.transformations.euler_from_quaternion((self.target_pose.orientation.x,self.target_pose.orientation.y,self.target_pose.orientation.z,self.target_pose.orientation.w))
             R_act = transformations.euler_matrix(act_w[0],act_w[1],-act_w[2])
@@ -77,15 +79,28 @@ class lyapunov_controller_node:
             
             
             e_w = e_w % (2*math.pi) 
-            if(e_w>=0.5*math.pi):
-                 e_w = e_w - math.pi;
-                 v_d = -v_d;    
-            elif(e_w<= -.5*math.pi):
-                 e_w = e_w + math.pi;
-                 v_d = -v_d;            
+            # if(e_w>=0.5*math.pi):
+            #      e_w = e_w - math.pi;
+            #      v_d = -v_d;    
+            # elif(e_w<= -.5*math.pi):
+            #      e_w = e_w + math.pi;
+            #      v_d = -v_d;            
             
-            self.controller_out.linear.x = self.KPx * e_x + v_d * math.cos(e_w) + self.KIx * self.e_x_i
-            self.controller_out.angular.z = w_d + self.KPy * v_d * e_y + self.KPw * math.sin(e_w) + self.KIw * self.e_w_i 
+            self.controller_out.twist.linear.x = self.KPx * e_x + v_d * math.cos(e_w) + self.KIx * self.e_x_i
+            self.controller_out.twist.angular.z = w_d + self.KPy * v_d * e_y + self.KPw * math.sin(e_w) + self.KIw * self.e_w_i 
+            self.controller_out.header.stamp = rospy.get_rostime()
+
+            if self.controller_out.twist.linear.x > self.max_vel:
+                self.controller_out.twist.linear.x = self.max_vel
+            elif self.controller_out.twist.linear.x < -self.max_vel:
+                self.controller_out.twist.linear.x = -self.max_vel
+
+            if self.controller_out.twist.angular.z > self.max_w:
+                self.controller_out.twist.angular.z = self.max_w
+            elif self.controller_out.twist.angular.z < -self.max_w:
+                self.controller_out.twist.angular.z = -self.max_w
+
+            print(self.controller_out)
             self.pub.publish(self.controller_out)
 
             

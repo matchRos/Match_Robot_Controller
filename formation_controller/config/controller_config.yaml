@@ -10,6 +10,9 @@ KIx: 0.01           # I gain for errors in x
 KIx_decay: 0.1   # rate with witch the integral component decays
 KIw_decay: 0.1   # rate with witch the integral component decays
 
+max_vel: 0.3
+max_w: 0.1
+
 #target_pose_topic: /mir1/ground_truth
 #target_vel_topic: /mir1/ground_truth
 target_pose_topic: /virtual_master/master_pose
