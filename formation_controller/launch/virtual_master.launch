@@ -1,8 +1,16 @@
 <launch>
 
+    <arg name="set_pose_topic" default="/virtual_master/set_pose"/>
+    <arg name="cmd_vel_topic" default="/virtual_master/cmd_vel"/>
+    <arg name="master_pose_topic" default="/virtual_master/master_pose"/>
+    <arg name="master_vel_topic" default="/virtual_master/master_vel"/>
 
     <node name="virtual_master" type="virtual_master.py" pkg="formation_controller" output="screen">
             <rosparam command="load" file="$(find formation_controller)/config/virtual_master_config.yaml"/>
+            <param name="set_pose_topic" value="$(arg set_pose_topic)" />
+            <param name="cmd_vel_topic" value="$(arg cmd_vel_topic)" />
+            <param name="master_pose_topic" value="$(arg master_pose_topic)" />
+            <param name="master_vel_topic" value="$(arg master_vel_topic)" />
     </node>
 
 
