@@ -86,7 +86,8 @@ class lyapunov_controller_node:
 
     def set_pose_cb(self,data):
         self.master_pose = data
-        orientation = transformations.euler_from_quaternion([data.orientation.x,data.orientation.y,data.orientation.z,data.orientation.w])
+        print(data)
+        orientation = transformations.euler_from_quaternion([data.pose.orientation.x,data.pose.orientation.y,data.pose.orientation.z,data.pose.orientation.w])
         self.master_orientation = orientation[2]
         
 

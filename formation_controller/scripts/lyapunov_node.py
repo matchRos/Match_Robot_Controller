@@ -100,7 +100,6 @@ class lyapunov_controller_node:
             elif self.controller_out.twist.angular.z < -self.max_w:
                 self.controller_out.twist.angular.z = -self.max_w
 
-            print(self.controller_out)
             self.pub.publish(self.controller_out)
 
             
