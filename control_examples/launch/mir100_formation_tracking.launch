@@ -2,6 +2,7 @@
 
 
     <arg name="robot1_name"  default="mir100"/>
+    <arg name="master_name"  default="virtual_master"/>
     
     <include file="$(find formation_controller)/launch/virtual_master.launch">
         <arg name="set_pose_topic" default="/virtual_master/set_pose"/>
@@ -11,14 +12,16 @@
     </include>
 
     <include file="$(find formation_controller)/launch/track_virtual_master.launch" ns="$(arg robot1_name)" pass_all_args="true">
-        <arg name="actual_pose_topic"     default="/mir1/ground_truth" />
-        <arg name="cmd_vel_topic"         default="/mir1/mobile_base_controller/cmd_vel" />
-        <arg name="rel_pose"              default="[0.0, -2 ,0.0]" /> 
+        <arg name="actual_pose_topic"     default="/robot_pose_stamped" />
+        <arg name="cmd_vel_topic"         default="/cmd_vel" />
+        <arg name="rel_pose"              default="[0.0, 0.0,0.0]" /> 
         <arg name="robot_name"            default="$(arg robot1_name)" />       
     </include>
 
 
-    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find control_examples)/rviz/multi_robot_formation_control.rviz" />
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find control_examples)/rviz/ps4_formation_controller.rviz" />
+
+    <include file="$(find ps4_controller)/launch/mir_ps4_drive.launch" ns="$(arg master_name)"/>
 
     
 </launch>
