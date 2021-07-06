@@ -1,0 +1,5 @@
+
+
+set_pose_topic: /virtual_master/set_pose
+follower_pose_topic: /robot_pose_stamped
+rel_pose: [0.0,0.0,0.0]

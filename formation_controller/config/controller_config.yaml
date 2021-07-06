@@ -11,7 +11,7 @@ KIx_decay: 0.1   # rate with witch the integral component decays
 KIw_decay: 0.1   # rate with witch the integral component decays
 
 max_vel: 0.3
-max_w: 0.1
+max_w: 0.2
 
 #target_pose_topic: /mir1/ground_truth
 #target_vel_topic: /mir1/ground_truth
