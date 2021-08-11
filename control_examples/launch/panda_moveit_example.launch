@@ -1,0 +1,7 @@
+<launch> 
+    <!-- Bringup the panda -->
+    <include file="$(find panda_hardware_helper)/launch/panda.launch" />
+
+    <node name="panda_moveit" type="panda_move.py" pkg="control_examples" output="screen"/>
+    
+</launch>
