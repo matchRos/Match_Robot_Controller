@@ -14,6 +14,8 @@ class auswertung():
         self.initial_pose = Pose()
         self.target_velocity.vel = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.initial_run = True
+        self.running_average_x = 0.0 
+        self.running_average_y = 0.0 
         
         self.pub_vel = rospy.Publisher('my_cartesian_velocity_controller/my_velocities', MyVelocity, queue_size=2)    
         self.sub = rospy.Subscriber("cartesian_EE_velocity", Twist, self.subcb)
@@ -27,34 +29,48 @@ class auswertung():
         rospy.loginfo("config loaded")
 
     def subcb(self,data): # type: (Twist) -> Pose
-        v_x = data.linear.x
-        v_y = data.linear.y
+        #v_x = data.linear.x
+        #v_y = data.linear.y
+        v_y = data.linear.x
+        v_x = 0.0
+        #print(v_x)
+       
         
-        if v_x > 0 and v_x < self.vel_limit_x:
-            self.target_velocity.vel[0]=v_x
-        elif v_x < 0 and v_x > -self.vel_limit_x:
-            self.target_velocity.vel[0]=v_x
-        elif v_x > 0 and v_x > self.vel_limit_x:
-            self.target_velocity.vel[0] = self.vel_limit_x
-        elif v_x < 0 and v_x < self.vel_limit_x:
-            self.target_velocity.vel[0] = -self.vel_limit_x
+        if v_x >= 0.0 and v_x < self.vel_limit_x:
+            vel_x=v_x
+        elif v_x < 0.0 and v_x > -self.vel_limit_x:
+            vel_x=v_x
+        elif v_x > 0.0 and v_x >= self.vel_limit_x:
+            vel_x = self.vel_limit_x
+        elif v_x < 0.0 and v_x <= self.vel_limit_x:
+            vel_x = -self.vel_limit_x
             
-        if v_y > 0 and v_y < self.vel_limit_y:
-            self.target_velocity.vel[1]=v_y
-        elif v_y < 0 and v_y > -self.vel_limit_y:
-            self.target_velocity.vel[1]=v_y
-        elif v_y > 0 and v_y > self.vel_limit_y:
-            self.target_velocity.vel[1] = self.vel_limit_y
-        elif v_y < 0 and v_y < self.vel_limit_x:
-            self.target_velocity.vel[1] = -self.vel_limit_y
+        
+            
+        if v_y >= 0.0 and v_y < self.vel_limit_y:
+            vel_y=v_y
+        elif v_y < 0.0 and v_y > -self.vel_limit_y:
+            vel_y=v_y
+        elif v_y > 0.0 and v_y >= self.vel_limit_y:
+            vel_y = self.vel_limit_y
+        elif v_y < 0.0 and v_y <= self.vel_limit_y:
+            vel_y = -self.vel_limit_y
+            
+            
+        self.running_average_x = self.running_average_x * 0.9 + vel_x * 0.1
+        self.running_average_y = self.running_average_y * 0.9 + vel_y * 0.1
+        
+        self.target_velocity.vel[0] = self.running_average_x 
+        self.target_velocity.vel[1] = self.running_average_y    
 
         print(self.target_velocity)
+        self.pub_vel.publish(self.target_velocity)
         
     
-    def pose_cb(self,data):
+    def pose_cb(self,data): 
         self.pose.position.x = data.O_T_EE[12]
-        self.pose.position.Y = data.O_T_EE[13]
-        self.pose.position.Z = data.O_T_EE[14]
+        self.pose.position.y = data.O_T_EE[13]
+        self.pose.position.z = data.O_T_EE[14]
 
         if self.initial_run == True:
             self.initial_run = False
