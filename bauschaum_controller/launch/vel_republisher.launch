@@ -1,0 +1,7 @@
+<launch>
+
+    <node name="vel_republisher" type="vel_republisher.py" pkg="bauschaum_controller" output="screen">
+            <rosparam command="load" file="$(find bauschaum_controller)/config/vel_limits.yaml"/>
+    </node>
+
+</launch>
