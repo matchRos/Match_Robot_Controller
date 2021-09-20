@@ -20,6 +20,7 @@ class lyapunov_controller_node:
         self.target_pose = Pose()
         self.target_pose = float("Inf")
         self.controller_out = TwistStamped()
+        self.target_vel = Twist()
         self.e_x_i = 0
         self.e_y_i = 0
         self.e_w_i = 0
