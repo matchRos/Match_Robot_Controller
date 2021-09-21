@@ -1,6 +1,7 @@
 <launch>
   <!-- Basic launch file for one robot in the match_world_common map-->
     <arg name="actual_pose_topic"  default="/mir2/ground_truth"/>
+    <arg name="target_pose_topic"  default="/virtual_master/master_pose"/>
     <arg name="cmd_vel_topic"  default="/mir2/mobile_base_controller/cmd_vel"/>
     <arg name="rel_pose"  default="[0,3,0]"/>
     <arg name="robot_name"  default="mir2"/>
