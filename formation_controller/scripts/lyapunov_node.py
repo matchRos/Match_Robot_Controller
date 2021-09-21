@@ -27,7 +27,7 @@ class lyapunov_controller_node:
 
         self.callback_selector()
         rospy.sleep(0.1)
-        rospy.Subscriber(self.follower_pose_topic, PoseStamped, self.act_pose_cb)
+        rospy.Subscriber(self.follower_pose_topic, Odometry, self.act_pose_cb)
         
         self.pub = rospy.Publisher(self.follower_cmd_vel_topic, TwistStamped, queue_size=10)
 
@@ -56,7 +56,7 @@ class lyapunov_controller_node:
 
     def act_pose_cb(self,data):
         if self.target_pose != float("Inf"):
-            act_pose = data.pose
+            act_pose = data.pose.pose
             act_w = tf.transformations.euler_from_quaternion((act_pose.orientation.x,act_pose.orientation.y,act_pose.orientation.z,act_pose.orientation.w))
             target_w = tf.transformations.euler_from_quaternion((self.target_pose.orientation.x,self.target_pose.orientation.y,self.target_pose.orientation.z,self.target_pose.orientation.w))
             R_act = transformations.euler_matrix(act_w[0],act_w[1],-act_w[2])
@@ -111,6 +111,7 @@ class lyapunov_controller_node:
     def callback_selector(self):
                 
         topic_type =get_topic_type(self.master_pose_topic)
+        rospy.logfatal(self.master_pose_topic)
         if topic_type[0] == "geometry_msgs/Pose":
             rospy.Subscriber(self.master_pose_topic, Pose, self.target_pose_Pose_cb)
         if topic_type[0] == "geometry_msgs/PoseStamped":
@@ -125,6 +126,7 @@ class lyapunov_controller_node:
                 rospy.Subscriber(self.master_vel_topic, TwistStamped, self.target_vel_Twist_Stamped_cb)
         elif topic_type[0] == "nav_msgs/Odometry":
             rospy.Subscriber(self.master_vel_topic, Odometry, self.target_vel_cb)
+            
             
     
     def target_pose_cb(self,data):
