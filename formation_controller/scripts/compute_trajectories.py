@@ -25,22 +25,22 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
     path_distance = robot0_v[1]
     index = 1
 
-    target_vel_lin = 0.1
+    target_vel_lin = 0.2
     
     current_velocity_lin = 0.0
     current_velocity_ang = 0.0
     dist = 0.0
-    acc_limit_lin = 0.01
+    acc_limit_lin = 0.001
     acc_limit_ang = 0.01
 
     while not rospy.is_shutdown() and target_reached == False:
-        acc_lin = target_vel_lin - current_velocity_lin
+        acc_lin = target_vel_lin/control_rate - current_velocity_lin
 
         # limit acceleration
         if abs(acc_lin) > acc_limit_lin:
             acc_lin = acc_lin / abs(acc_lin) * acc_limit_lin
 
-        current_velocity_lin += acc_lin / control_rate
+        current_velocity_lin += acc_lin
 
         print(dist + current_velocity_lin , path_distance)
 
@@ -68,13 +68,13 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
 
 
     #print(target_path.x)
-    f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
+    # f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
 
-    #ax1.plot(xhat,yhat)
-    #ax1.set_title('Sharing Y axis')
-    ax1.plot(target_path.x,target_path.y)
-    ax2.plot(robot0_path.x,robot0_path.y)
-    plt.show()
+    # #ax1.plot(xhat,yhat)
+    # #ax1.set_title('Sharing Y axis')
+    # ax1.plot(target_path.x,target_path.y)
+    # ax2.plot(robot0_path.x,robot0_path.y)
+    # plt.show()
     
 
     v_path = [0.0]
@@ -82,8 +82,8 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
         #v_path.append(math.sqrt((xhat[i]-xhat[i-1])**2+(yhat[i]-yhat[i-1])**2))
         v_path.append(math.sqrt((target_path.x[i]-target_path.x[i-1])**2+(target_path.y[i]-target_path.y[i-1])**2))
 
-    # plt.plot(v_path)
-    # plt.show()
+    plt.plot(v_path)
+    plt.show()
 
 
 
