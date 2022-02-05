@@ -22,7 +22,7 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
     target_pose.x = robot0_path.x[0]
     target_pose.y = robot0_path.y[0]
     target_pose.phi = robot0_path.phi[0]
-    path_distance = robot0_v[1]
+    path_distance = robot0_v[0]
     current_angle = robot0_path.phi[0]
     index = 1
 
@@ -35,6 +35,11 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
     acc_limit_lin = 0.01
     acc_limit_ang = 0.01
 
+    dist_list = []
+    act_dist_list = []
+    target_angle_old = 0.0
+
+    #######
 
 
     while not rospy.is_shutdown() and target_reached == False:
@@ -46,17 +51,32 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
 
         current_velocity_lin += acc_lin/control_rate
 
-        if dist + current_velocity_lin > path_distance:
-            while dist + current_velocity_lin > path_distance and not rospy.is_shutdown():
+        
+
+
+        if dist + current_velocity_lin >= path_distance:
+            while dist + current_velocity_lin >= path_distance and not rospy.is_shutdown():
                 index += 1
-                if index > len(robot0_v)-1:
+                if index > len(robot0_v)-2:
                     target_reached = True
                     print("target reached")
                     break
                 else:
                     path_distance += robot0_v[index]
 
+
+        dist_to_cp = math.sqrt((robot0_path.y[index]-target_pose.y)**2 + (robot0_path.x[index]-target_pose.x)**2)
+        if dist_to_cp<current_velocity_lin:
+            index += 1
+            print("slow")
+
+        
         target_angle = math.atan2(robot0_path.y[index]-target_pose.y, robot0_path.x[index]-target_pose.x)
+        if abs(target_angle-target_angle_old)>1.0:
+            dist_to_cp = math.sqrt((robot0_path.y[index]-target_pose.y)**2 + (robot0_path.x[index]-target_pose.x)**2)
+            print(path_distance,dist,dist_to_cp,current_velocity_lin,target_angle)
+        target_angle_old = target_angle
+
         w_target=target_angle-current_angle
         if abs(w_target) > w_limit:
             w_target = w_target / abs(w_target) * w_limit
@@ -68,14 +88,15 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
         dist += current_velocity_lin / control_rate
         target_path.x.append(target_pose.x)
         target_path.y.append(target_pose.y)
+        dist_list.append(path_distance)
+        act_dist_list.append(dist)
 
     xhat = savgol_filter(target_path.x, 51, 3) # window size 51, polynomial order 3
     yhat = savgol_filter(target_path.y, 51, 3) # window size 51, polynomial order 3
 
 
-    # print(target_path.x)
+    #print(target_path.x)
     # f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
-
     # ax1.plot(xhat,yhat)
     # #ax1.set_title('Sharing Y axis')
     # #ax1.plot(target_path.x,target_path.y)
@@ -90,6 +111,7 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
         #w_path.append(math.atan2(yhat[i]-yhat[i-1], xhat[i]-xhat[i-1]))
         v_path.append(math.sqrt((target_path.x[i]-target_path.x[i-1])**2+(target_path.y[i]-target_path.y[i-1])**2))
         w_path.append(math.atan2(target_path.y[i]-target_path.y[i-1], target_path.x[i]-target_path.x[i-1]))
+    #plt.plot(w_path)
     plt.plot(w_path)
     plt.show()
 
