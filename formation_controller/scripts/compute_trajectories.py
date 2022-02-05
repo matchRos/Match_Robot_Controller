@@ -51,9 +51,6 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
 
         current_velocity_lin += acc_lin/control_rate
 
-        
-
-
         if dist + current_velocity_lin >= path_distance:
             while dist + current_velocity_lin >= path_distance and not rospy.is_shutdown():
                 index += 1
@@ -69,6 +66,8 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
         if dist_to_cp<current_velocity_lin:
             index += 1
             print("slow")
+        if index >= len(robot0_path.y):
+            break
 
         
         target_angle = math.atan2(robot0_path.y[index]-target_pose.y, robot0_path.x[index]-target_pose.x)
@@ -94,14 +93,14 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
     xhat = savgol_filter(target_path.x, 51, 3) # window size 51, polynomial order 3
     yhat = savgol_filter(target_path.y, 51, 3) # window size 51, polynomial order 3
 
-
-    # f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
-    # ax1.plot(xhat,yhat)
-    # #ax1.set_title('Sharing Y axis')
-    # #ax1.plot(target_path.x,target_path.y)
-    # ax2.plot(robot0_path.x,robot0_path.y)
-    # plt.show()
-    
+    plt.figure()
+    f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
+    ax1.plot(xhat,yhat)
+    #ax1.set_title('Sharing Y axis')
+    #ax1.plot(target_path.x,target_path.y)
+    ax2.plot(robot0_path.x,robot0_path.y)
+    plt.show()
+  
 
     v_path = [0.0]
     phi_path = [robot0_path.phi[0]]
@@ -114,7 +113,7 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
         #v_path.append(math.sqrt((target_path.x[i]-target_path.x[i-1])**2+(target_path.y[i]-target_path.y[i-1])**2))
         #phi_path.append(math.atan2(target_path.y[i]-target_path.y[i-1], target_path.x[i]-target_path.x[i-1]))
         w_path.append(phi_path[i]-phi_path[i-1])
-
+    plt.figure()
     plt.plot(v_path)
     plt.plot(w_path)
     plt.show()
