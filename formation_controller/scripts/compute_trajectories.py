@@ -23,15 +23,19 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
     target_pose.y = robot0_path.y[0]
     target_pose.phi = robot0_path.phi[0]
     path_distance = robot0_v[1]
+    current_angle = robot0_path.phi[0]
     index = 1
 
     target_vel_lin = 0.2
+    w_limit = 0.2
     
     current_velocity_lin = 0.0
     current_velocity_ang = 0.0
     dist = 0.0
-    acc_limit_lin = 0.001
+    acc_limit_lin = 0.01
     acc_limit_ang = 0.01
+
+
 
     while not rospy.is_shutdown() and target_reached == False:
         acc_lin = target_vel_lin/control_rate - current_velocity_lin
@@ -40,10 +44,7 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
         if abs(acc_lin) > acc_limit_lin:
             acc_lin = acc_lin / abs(acc_lin) * acc_limit_lin
 
-        current_velocity_lin += acc_lin
-
-        print(dist + current_velocity_lin , path_distance)
-
+        current_velocity_lin += acc_lin/control_rate
 
         if dist + current_velocity_lin > path_distance:
             while dist + current_velocity_lin > path_distance and not rospy.is_shutdown():
@@ -56,6 +57,11 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
                     path_distance += robot0_v[index]
 
         target_angle = math.atan2(robot0_path.y[index]-target_pose.y, robot0_path.x[index]-target_pose.x)
+        w_target=target_angle-current_angle
+        if abs(w_target) > w_limit:
+            w_target = w_target / abs(w_target) * w_limit
+        current_angle += w_target
+
         target_pose.x = target_pose.x + math.cos(target_angle) * current_velocity_lin
         target_pose.y = target_pose.y + math.sin(target_angle) * current_velocity_lin
             
@@ -67,22 +73,24 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
     yhat = savgol_filter(target_path.y, 51, 3) # window size 51, polynomial order 3
 
 
-    #print(target_path.x)
+    # print(target_path.x)
     # f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
 
-    # #ax1.plot(xhat,yhat)
+    # ax1.plot(xhat,yhat)
     # #ax1.set_title('Sharing Y axis')
-    # ax1.plot(target_path.x,target_path.y)
+    # #ax1.plot(target_path.x,target_path.y)
     # ax2.plot(robot0_path.x,robot0_path.y)
     # plt.show()
     
 
     v_path = [0.0]
+    w_path = [0.0]
     for i in range(1,len(xhat)):
         #v_path.append(math.sqrt((xhat[i]-xhat[i-1])**2+(yhat[i]-yhat[i-1])**2))
+        #w_path.append(math.atan2(yhat[i]-yhat[i-1], xhat[i]-xhat[i-1]))
         v_path.append(math.sqrt((target_path.x[i]-target_path.x[i-1])**2+(target_path.y[i]-target_path.y[i-1])**2))
-
-    plt.plot(v_path)
+        w_path.append(math.atan2(target_path.y[i]-target_path.y[i-1], target_path.x[i]-target_path.x[i-1]))
+    plt.plot(w_path)
     plt.show()
 
 
