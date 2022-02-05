@@ -4,6 +4,7 @@ from cmath import sqrt
 import rospy
 from nav_msgs.msg import Path
 from mypath import Mypath
+from compute_trajectories import compute_trajectories
 from tf import transformations
 import matplotlib.pyplot as plt
 
@@ -16,10 +17,6 @@ class compute_velocity():
         rospy.init_node("compute_velocity_node")
         rospy.loginfo("compute_velocity node running")
         
-
-
-
-
         rospy.Subscriber(self.robot0_plan_topic, Path, self.robot0_plan_cb)
         rospy.Subscriber(self.robot1_plan_topic, Path, self.robot1_plan_cb)
         rospy.Subscriber(self.robot2_plan_topic, Path, self.robot2_plan_cb)
@@ -35,7 +32,7 @@ class compute_velocity():
         path_len = len(Path.poses)
         for i in range(0,path_len):
             self.robot0_path.x.append(Path.poses[i].pose.position.x)
-            self.robot0_path.y.append(Path.poses[i].pose.position.x)
+            self.robot0_path.y.append(Path.poses[i].pose.position.y)
             phi = transformations.euler_from_quaternion([Path.poses[i].pose.orientation.x,Path.poses[i].pose.orientation.y,Path.poses[i].pose.orientation.z,Path.poses[i].pose.orientation.w])
             self.robot0_path.phi.append(phi[2])
         
@@ -54,7 +51,7 @@ class compute_velocity():
         path_len = len(Path.poses)
         for i in range(0,path_len):
             self.robot1_path.x.append(Path.poses[i].pose.position.x)
-            self.robot1_path.y.append(Path.poses[i].pose.position.x)
+            self.robot1_path.y.append(Path.poses[i].pose.position.y)
             phi = transformations.euler_from_quaternion([Path.poses[i].pose.orientation.x,Path.poses[i].pose.orientation.y,Path.poses[i].pose.orientation.z,Path.poses[i].pose.orientation.w])
             self.robot1_path.phi.append(phi[2])
         
@@ -73,7 +70,7 @@ class compute_velocity():
         path_len = len(Path.poses)
         for i in range(0,path_len):
             self.robot2_path.x.append(Path.poses[i].pose.position.x)
-            self.robot2_path.y.append(Path.poses[i].pose.position.x)
+            self.robot2_path.y.append(Path.poses[i].pose.position.y)
             phi = transformations.euler_from_quaternion([Path.poses[i].pose.orientation.x,Path.poses[i].pose.orientation.y,Path.poses[i].pose.orientation.z,Path.poses[i].pose.orientation.w])
             self.robot2_path.phi.append(phi[2])
         
@@ -102,13 +99,13 @@ class compute_velocity():
                 rospy.loginfo("waiting for paths")
                 rospy.sleep(1)
 
+        compute_trajectories(self.robot0_path,self.robot1_path,self.robot2_path,self.robot0_v,self.robot0_w,self.robot1_v,self.robot1_w,self.robot2_v,self.robot2_w)
                 # set start pose
         self.target_pose.x = self.robot0_path.x[0]
         self.target_pose.y = self.robot0_path.y[0]
         self.target_pose.phi = self.robot0_path.phi[0]
         self.target_pose.x = self.target_pose.x
-        plt.plot(self.robot2_v)
-        plt.show()
+        
         print("hello")
 
 
