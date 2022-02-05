@@ -95,7 +95,6 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
     yhat = savgol_filter(target_path.y, 51, 3) # window size 51, polynomial order 3
 
 
-    #print(target_path.x)
     # f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
     # ax1.plot(xhat,yhat)
     # #ax1.set_title('Sharing Y axis')
@@ -105,13 +104,18 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
     
 
     v_path = [0.0]
+    phi_path = [robot0_path.phi[0]]
+    phi_path[0] = math.atan2(yhat[1]-yhat[0], xhat[1]-xhat[0])
     w_path = [0.0]
+
     for i in range(1,len(xhat)):
-        #v_path.append(math.sqrt((xhat[i]-xhat[i-1])**2+(yhat[i]-yhat[i-1])**2))
-        #w_path.append(math.atan2(yhat[i]-yhat[i-1], xhat[i]-xhat[i-1]))
-        v_path.append(math.sqrt((target_path.x[i]-target_path.x[i-1])**2+(target_path.y[i]-target_path.y[i-1])**2))
-        w_path.append(math.atan2(target_path.y[i]-target_path.y[i-1], target_path.x[i]-target_path.x[i-1]))
-    #plt.plot(w_path)
+        v_path.append(math.sqrt((xhat[i]-xhat[i-1])**2+(yhat[i]-yhat[i-1])**2))
+        phi_path.append(math.atan2(yhat[i]-yhat[i-1], xhat[i]-xhat[i-1]))
+        #v_path.append(math.sqrt((target_path.x[i]-target_path.x[i-1])**2+(target_path.y[i]-target_path.y[i-1])**2))
+        #phi_path.append(math.atan2(target_path.y[i]-target_path.y[i-1], target_path.x[i]-target_path.x[i-1]))
+        w_path.append(phi_path[i]-phi_path[i-1])
+
+    plt.plot(v_path)
     plt.plot(w_path)
     plt.show()
 
