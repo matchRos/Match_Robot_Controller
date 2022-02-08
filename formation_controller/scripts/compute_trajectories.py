@@ -158,8 +158,7 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
         robot1_target_path.y.append(robot1_target_pose.y)
         robot2_target_path.x.append(robot2_target_pose.x)
         robot2_target_path.y.append(robot2_target_pose.y)
-        #dist_list.append(robot0_path_distance)
-        #act_dist_list.append(dist)
+
 
     robot0_xhat = savgol_filter(robot0_target_path.x, 51, 3) # window size 51, polynomial order 3
     robot0_yhat = savgol_filter(robot0_target_path.y, 51, 3) # window size 51, polynomial order 3
@@ -168,15 +167,6 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
     robot2_xhat = savgol_filter(robot2_target_path.x, 51, 3) # window size 51, polynomial order 3
     robot2_yhat = savgol_filter(robot2_target_path.y, 51, 3) # window size 51, polynomial order 3
 
-    # plt.figure()
-    # f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
-    # ax1.plot(robot0_xhat,robot0_yhat)
-    # ax2.plot(robot0_path.x,robot0_path.y)
-    # ax1.plot(robot1_xhat,robot1_yhat)
-    # ax2.plot(robot1_path.x,robot1_path.y)
-    # ax1.plot(robot2_xhat,robot2_yhat)
-    # ax2.plot(robot2_path.x,robot2_path.y)
-    # plt.show()
 
     if len(robot0_xhat) == len(robot1_xhat) == len(robot2_xhat):
         rospy.loginfo_once("All trajecories have equal length")
@@ -198,26 +188,32 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
 
     robot0_target_trajectory.header.frame_id = "map"
     robot0_target_trajectory.header.stamp = rospy.Time.now()
+    robot1_target_trajectory.header.frame_id = "map"
+    robot1_target_trajectory.header.stamp = rospy.Time.now()
+    robot2_target_trajectory.header.frame_id = "map"
+    robot2_target_trajectory.header.stamp = rospy.Time.now()
 
     for i in range(0,len(robot0_xhat)):
         robot0_target_trajectory_point.pose.position.x = robot0_xhat[i]
         robot0_target_trajectory_point.pose.position.y = robot0_yhat[i]
+        robot1_target_trajectory_point.pose.position.x = robot1_xhat[i]
+        robot1_target_trajectory_point.pose.position.y = robot1_yhat[i]
+        robot2_target_trajectory_point.pose.position.x = robot2_xhat[i]
+        robot2_target_trajectory_point.pose.position.y = robot2_yhat[i]
 
-        # robot0_target_trajectory_point.positions=   ([robot0_xhat[i],robot0_yhat[i]])
-        # robot1_target_trajectory_point.positions=   ([robot1_xhat[i],robot1_yhat[i]])
-        # robot2_target_trajectory_point.positions=   ([robot2_xhat[i],robot2_yhat[i]])
-        #robot0_target_trajectory.poses.append(robot0_target_trajectory_point)
-        # robot1_target_trajectory.points.append(robot1_target_trajectory_point)
-        # robot2_target_trajectory.points.append(robot2_target_trajectory_point)
         robot0_target_trajectory.poses.append(robot0_target_trajectory_point)
+        robot1_target_trajectory.poses.append(robot1_target_trajectory_point)
+        robot2_target_trajectory.poses.append(robot2_target_trajectory_point)
 
     
-    print(robot0_target_trajectory)
-
+    #print(robot0_target_trajectory)
+    rospy.sleep(0.1)
     robot0_pub.publish(robot0_target_trajectory)
-    rospy.spin()
-    #robot1_pub.publish(robot1_target_trajectory)
-    #robot2_pub.publish(robot2_target_trajectory)
+    rospy.sleep(0.1)
+    robot1_pub.publish(robot1_target_trajectory)
+    rospy.sleep(0.1)
+    robot2_pub.publish(robot2_target_trajectory)
+
 
     
 
@@ -226,6 +222,18 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
 
 
 #####################################################################################################################
+
+    # plt.figure()
+    # f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
+    # ax1.plot(robot0_xhat,robot0_yhat)
+    # ax2.plot(robot0_path.x,robot0_path.y)
+    # ax1.plot(robot1_xhat,robot1_yhat)
+    # ax2.plot(robot1_path.x,robot1_path.y)
+    # ax1.plot(robot2_xhat,robot2_yhat)
+    # ax2.plot(robot2_path.x,robot2_path.y)
+    # plt.show()
+
+
     robot0_v_path = [0.0]
     robot0_phi_path = [robot0_path.phi[0]]
     robot0_phi_path[0] = math.atan2(robot0_yhat[1]-robot0_yhat[0], robot0_xhat[1]-robot0_xhat[0])
