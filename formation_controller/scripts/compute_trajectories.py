@@ -2,13 +2,14 @@
 
 from cmath import sqrt
 import rospy
-#from nav_msgs.msg import Path
+from nav_msgs.msg import Path
+from geometry_msgs.msg import PoseStamped
 from mypath import Mypath
 #from tf import transformations
 import matplotlib.pyplot as plt
 import math
 from scipy.signal import savgol_filter
-from trajectory_msgs.msg import JointTrajectoryPoint , JointTrajectory
+#from trajectory_msgs.msg import JointTrajectoryPoint , JointTrajectory
 
 
     
@@ -184,31 +185,41 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
 
   
 ################################################################################################################
-    robot0_pub = rospy.Publisher("robot0/target_trajectory", JointTrajectoryPoint, queue_size=1 )
-    robot1_pub = rospy.Publisher("robot1/target_trajectory", JointTrajectoryPoint, queue_size=1 )
-    robot2_pub = rospy.Publisher("robot2/target_trajectory", JointTrajectoryPoint, queue_size=1 )
+    robot0_pub = rospy.Publisher("robot0/target_trajectory", Path, queue_size=1 )
+    robot1_pub = rospy.Publisher("robot1/target_trajectory", Path, queue_size=1 )
+    robot2_pub = rospy.Publisher("robot2/target_trajectory", Path, queue_size=1 )
 
-    robot0_target_trajectory = JointTrajectory()
-    robot1_target_trajectory = JointTrajectory()
-    robot2_target_trajectory = JointTrajectory()
-    robot0_target_trajectory_point = JointTrajectoryPoint()
-    robot1_target_trajectory_point = JointTrajectoryPoint()
-    robot2_target_trajectory_point = JointTrajectoryPoint()
+    robot0_target_trajectory = Path()
+    robot1_target_trajectory = Path()
+    robot2_target_trajectory = Path()
+    robot0_target_trajectory_point = PoseStamped()
+    robot1_target_trajectory_point = PoseStamped()
+    robot2_target_trajectory_point = PoseStamped()
+
+    robot0_target_trajectory.header.frame_id = "map"
+    robot0_target_trajectory.header.stamp = rospy.Time.now()
 
     for i in range(0,len(robot0_xhat)):
-        robot0_target_trajectory_point.positions=   ([robot0_xhat[i],robot0_yhat[i]])
-        robot0_target_trajectory_point.positions=   ([robot1_xhat[i],robot2_yhat[i]])
-        robot0_target_trajectory_point.positions=   ([robot2_xhat[i],robot2_yhat[i]])
-        robot0_target_trajectory.points.append(robot0_target_trajectory_point)
-        robot1_target_trajectory.points.append(robot1_target_trajectory_point)
-        robot2_target_trajectory.points.append(robot2_target_trajectory_point)
+        robot0_target_trajectory_point.pose.position.x = robot0_xhat[i]
+        robot0_target_trajectory_point.pose.position.y = robot0_yhat[i]
 
+        # robot0_target_trajectory_point.positions=   ([robot0_xhat[i],robot0_yhat[i]])
+        # robot1_target_trajectory_point.positions=   ([robot1_xhat[i],robot1_yhat[i]])
+        # robot2_target_trajectory_point.positions=   ([robot2_xhat[i],robot2_yhat[i]])
+        #robot0_target_trajectory.poses.append(robot0_target_trajectory_point)
+        # robot1_target_trajectory.points.append(robot1_target_trajectory_point)
+        # robot2_target_trajectory.points.append(robot2_target_trajectory_point)
+        robot0_target_trajectory.poses.append(robot0_target_trajectory_point)
+
+    
     print(robot0_target_trajectory)
 
     robot0_pub.publish(robot0_target_trajectory)
-    robot1_pub.publish(robot1_target_trajectory)
-    robot2_pub.publish(robot2_target_trajectory)
+    rospy.spin()
+    #robot1_pub.publish(robot1_target_trajectory)
+    #robot2_pub.publish(robot2_target_trajectory)
 
+    
 
 
 
@@ -242,16 +253,16 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
         robot0_w_path.append(robot0_phi_path[i]-robot0_phi_path[i-1])
         robot1_w_path.append(robot1_phi_path[i]-robot1_phi_path[i-1])
         robot2_w_path.append(robot2_phi_path[i]-robot2_phi_path[i-1])
-    plt.figure()
-    plt.plot(robot0_v_path)
-    plt.plot(robot1_v_path)
-    plt.plot(robot2_v_path)
-    plt.figure()
-    plt.plot(robot0_w_path)
-    plt.plot(robot1_w_path)
-    plt.plot(robot2_w_path)
-    #plt.plot(robot0_w_path)
-    plt.show()
+    # plt.figure()
+    # plt.plot(robot0_v_path)
+    # plt.plot(robot1_v_path)
+    # plt.plot(robot2_v_path)
+    # plt.figure()
+    # plt.plot(robot0_w_path)
+    # plt.plot(robot1_w_path)
+    # plt.plot(robot2_w_path)
+    # #plt.plot(robot0_w_path)
+    # plt.show()
 
     #rospy.sleep(100)
 
