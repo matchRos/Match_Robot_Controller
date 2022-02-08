@@ -7,6 +7,7 @@ from mypath import Mypath
 from compute_trajectories import compute_trajectories
 from tf import transformations
 import matplotlib.pyplot as plt
+import math
 
 class compute_velocity():
 
@@ -39,7 +40,7 @@ class compute_velocity():
         self.robot0_v = [0.0]
         self.robot0_w = [0.0]
         for i in range(1,path_len-1):
-            self.robot0_v.append(((self.robot0_path.x[i+1]-self.robot0_path.x[i])**2 + (self.robot0_path.y[i+1]-self.robot0_path.y[i])**2 ))
+            self.robot0_v.append(math.sqrt((self.robot0_path.x[i+1]-self.robot0_path.x[i])**2 + (self.robot0_path.y[i+1]-self.robot0_path.y[i])**2 ))
             self.robot0_w.append(self.robot0_path.phi[i+1]-self.robot0_path.phi[i])
         self.robot0_path_received = True
 
@@ -57,7 +58,7 @@ class compute_velocity():
         self.robot1_v = [0.0]
         self.robot1_w = [0.0]
         for i in range(1,path_len-1):
-            self.robot1_v.append(((self.robot1_path.x[i+1]-self.robot1_path.x[i])**2 + (self.robot1_path.y[i+1]-self.robot1_path.y[i])**2 ))
+            self.robot1_v.append(math.sqrt((self.robot1_path.x[i+1]-self.robot1_path.x[i])**2 + (self.robot1_path.y[i+1]-self.robot1_path.y[i])**2 ))
             self.robot1_w.append(self.robot1_path.phi[i+1]-self.robot1_path.phi[i])
         self.robot1_path_received = True
 
@@ -75,7 +76,7 @@ class compute_velocity():
         self.robot2_v = [0.0]
         self.robot2_w = [0.0]
         for i in range(1,path_len-1):
-            self.robot2_v.append(((self.robot2_path.x[i+1]-self.robot2_path.x[i])**2 + (self.robot2_path.y[i+1]-self.robot2_path.y[i])**2 ))
+            self.robot2_v.append(math.sqrt((self.robot2_path.x[i+1]-self.robot2_path.x[i])**2 + (self.robot2_path.y[i+1]-self.robot2_path.y[i])**2 ))
             self.robot2_w.append(self.robot2_path.phi[i+1]-self.robot2_path.phi[i])
         self.robot2_path_received = True
 
