@@ -42,7 +42,6 @@ class compute_velocity():
             self.robot0_v.append(((self.robot0_path.x[i+1]-self.robot0_path.x[i])**2 + (self.robot0_path.y[i+1]-self.robot0_path.y[i])**2 ))
             self.robot0_w.append(self.robot0_path.phi[i+1]-self.robot0_path.phi[i])
         self.robot0_path_received = True
-        print("path1")
 
     def robot1_plan_cb(self,Path):
         self.robot1_path.x = []
@@ -61,7 +60,6 @@ class compute_velocity():
             self.robot1_v.append(((self.robot1_path.x[i+1]-self.robot1_path.x[i])**2 + (self.robot1_path.y[i+1]-self.robot1_path.y[i])**2 ))
             self.robot1_w.append(self.robot1_path.phi[i+1]-self.robot1_path.phi[i])
         self.robot1_path_received = True
-        print("path2")
 
     def robot2_plan_cb(self,Path):
         self.robot2_path.x = []
@@ -80,7 +78,6 @@ class compute_velocity():
             self.robot2_v.append(((self.robot2_path.x[i+1]-self.robot2_path.x[i])**2 + (self.robot2_path.y[i+1]-self.robot2_path.y[i])**2 ))
             self.robot2_w.append(self.robot2_path.phi[i+1]-self.robot2_path.phi[i])
         self.robot2_path_received = True
-        print("path3")
 
 
 
