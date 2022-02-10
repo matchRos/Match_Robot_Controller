@@ -8,6 +8,7 @@ from mypath import Mypath
 #from tf import transformations
 import matplotlib.pyplot as plt
 import math
+import numpy as np
 from scipy.signal import savgol_filter
 #from trajectory_msgs.msg import JointTrajectoryPoint , JointTrajectory
 
@@ -193,7 +194,12 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
     robot2_target_trajectory.header.frame_id = "map"
     robot2_target_trajectory.header.stamp = rospy.Time.now()
 
-    for i in range(0,len(robot0_xhat)):
+    
+    robot0_target_trajectory.poses = [PoseStamped() for i in range(len(robot0_xhat))] 
+    robot1_target_trajectory.poses = [PoseStamped() for i in range(len(robot1_xhat))] 
+    robot2_target_trajectory.poses = [PoseStamped() for i in range(len(robot2_xhat))] 
+
+    for i in range(0,len(robot0_xhat)): #len(robot0_xhat)
         robot0_target_trajectory_point.pose.position.x = robot0_xhat[i]
         robot0_target_trajectory_point.pose.position.y = robot0_yhat[i]
         robot1_target_trajectory_point.pose.position.x = robot1_xhat[i]
@@ -201,12 +207,13 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
         robot2_target_trajectory_point.pose.position.x = robot2_xhat[i]
         robot2_target_trajectory_point.pose.position.y = robot2_yhat[i]
 
-        robot0_target_trajectory.poses.append(robot0_target_trajectory_point)
-        robot1_target_trajectory.poses.append(robot1_target_trajectory_point)
-        robot2_target_trajectory.poses.append(robot2_target_trajectory_point)
+        robot0_target_trajectory.poses[i].pose.position.x = robot0_target_trajectory_point.pose.position.x
+        robot0_target_trajectory.poses[i].pose.position.y = robot0_target_trajectory_point.pose.position.y
+        robot1_target_trajectory.poses[i].pose.position.x = robot1_target_trajectory_point.pose.position.x
+        robot1_target_trajectory.poses[i].pose.position.y = robot1_target_trajectory_point.pose.position.y
+        robot2_target_trajectory.poses[i].pose.position.x = robot2_target_trajectory_point.pose.position.x
+        robot2_target_trajectory.poses[i].pose.position.y = robot2_target_trajectory_point.pose.position.y
 
-    
-    #print(robot0_target_trajectory)
     rospy.sleep(0.1)
     robot0_pub.publish(robot0_target_trajectory)
     rospy.sleep(0.1)

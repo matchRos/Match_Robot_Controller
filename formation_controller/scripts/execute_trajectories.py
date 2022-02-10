@@ -49,7 +49,6 @@ class execute_trajectories_node():
             phi = math.atan2(Path.poses[i+1].pose.position.y-Path.poses[i].pose.position.y,Path.poses[i+1].pose.position.x-Path.poses[i].pose.position.x)
             self.robot0_trajectory.phi.append(phi)
         
-        print(self.robot0_trajectory.x)
 
         self.robot0_v = [0.0]
         self.robot0_w = [0.0]
