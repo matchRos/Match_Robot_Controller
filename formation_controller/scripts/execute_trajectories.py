@@ -1,11 +1,16 @@
 #! /usr/bin/env python3
 
+from cmath import inf
 import rospy
 #from nav_msgs.msg import Path
 from mypath import Mypath
 from nav_msgs.msg import Path
 import math
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, PoseWithCovarianceStamped, Pose
+from nav_msgs.msg import Odometry
+from tf import transformations
+from l_phi_controller import l_phi_controller
+from cartesian_controller import cartesian_controller
 
 
 
@@ -27,19 +32,53 @@ class execute_trajectories_node():
         rospy.sleep(1)    
         print("all trajecories received")
 
-        idx = 0
+        e0_l = 10.0
+        e0_phi = inf
         rate = rospy.Rate(self.control_rate)
-        while not rospy.is_shutdown() and idx < len(self.robot0_v):
-            self.robot0_twist.linear.x = self.robot0_v[idx] * self.control_rate
-            self.robot0_twist.angular.z = self.robot0_w[idx] * self.control_rate
+        idx = 0
+        while (abs(e0_l) > 0.05 or abs(e0_phi) > 0.06) and not rospy.is_shutdown():
+            e0_l, e0_phi = l_phi_controller(self.robot0_act_pose,self.robot0_trajectory.x[idx],self.robot0_trajectory.y[idx])
+            self.robot0_twist.linear.x = 0.1 * e0_l
+            self.robot0_twist.angular.z = 0.01 * e0_phi
             self.robot0_twist_publisher.publish(self.robot0_twist)
 
-            self.robot1_twist.linear.x = self.robot1_v[idx] * self.control_rate
-            self.robot1_twist.angular.z = self.robot1_w[idx] * self.control_rate
+            e1_l, e1_phi = l_phi_controller(self.robot1_act_pose,self.robot1_trajectory.x[idx],self.robot1_trajectory.y[idx])
+            self.robot1_twist.linear.x = 0.1 * e1_l
+            self.robot1_twist.angular.z = 0.01 * e1_phi
             self.robot1_twist_publisher.publish(self.robot1_twist)
 
-            self.robot2_twist.linear.x = self.robot2_v[idx] * self.control_rate
-            self.robot2_twist.angular.z = self.robot2_w[idx] * self.control_rate
+            e2_l, e2_phi = l_phi_controller(self.robot2_act_pose,self.robot2_trajectory.x[idx],self.robot2_trajectory.y[idx])
+            self.robot2_twist.linear.x = 0.1 * e2_l
+            self.robot2_twist.angular.z = 0.01 * e2_phi
+            self.robot2_twist_publisher.publish(self.robot2_twist)
+
+            #print(e1_l,e1_phi,e2_l,e2_phi)
+
+
+        idx = 0
+        while not rospy.is_shutdown() and idx < len(self.robot0_v):
+
+            # e0_x = self.robot0_trajectory.x[idx] - self.robot0_act_pose.position.x
+            # e0_y = self.robot0_trajectory.y[idx] - self.robot0_act_pose.position.y
+            # phi_act = transformations.euler_from_quaternion([self.robot0_act_pose.orientation.x,self.robot0_act_pose.orientation.y,self.robot0_act_pose.orientation.z,self.robot0_act_pose.orientation.w])
+            # e0_z = self.robot0_trajectory.phi[idx] - phi_act[2]
+            
+
+            u0_v, u0_w = cartesian_controller(self.robot0_act_pose,self.robot0_trajectory.x[idx],self.robot0_trajectory.y[idx],self.control_rate*self.robot0_w[idx],self.control_rate*self.robot0_v[idx],self.robot0_trajectory.phi[idx])
+            u1_v, u1_w = cartesian_controller(self.robot1_act_pose,self.robot1_trajectory.x[idx],self.robot1_trajectory.y[idx],self.control_rate*self.robot1_w[idx],self.control_rate*self.robot1_v[idx],self.robot1_trajectory.phi[idx])
+            u2_v, u2_w = cartesian_controller(self.robot2_act_pose,self.robot2_trajectory.x[idx],self.robot2_trajectory.y[idx],self.control_rate*self.robot2_w[idx],self.control_rate*self.robot2_v[idx],self.robot2_trajectory.phi[idx])
+
+
+            self.robot0_twist.linear.x = u0_v   # self.robot0_v[idx] * self.control_rate
+            self.robot0_twist.angular.z = u0_w      # self.robot0_w[idx] * self.control_rate
+            self.robot0_twist_publisher.publish(self.robot0_twist)
+
+            self.robot1_twist.linear.x = u1_v       #self.robot1_w[idx] * self.control_rate
+            self.robot1_twist.angular.z = u1_w      #self.robot1_w[idx] * self.control_rate
+            self.robot1_twist_publisher.publish(self.robot1_twist)
+
+            self.robot2_twist.linear.x = u2_v       # self.robot2_v[idx] * self.control_rate
+            self.robot2_twist.angular.z = u2_w      #self.robot2_w[idx] * self.control_rate
             self.robot2_twist_publisher.publish(self.robot2_twist)
             idx += 1
             rate.sleep()
@@ -106,7 +145,14 @@ class execute_trajectories_node():
         self.robot2_trajectory_received = True
         print("trajecory 2 received")
 
+    def robot0_pose_cb(self,PoseWithCovarianceStamped):
+        self.robot0_act_pose = PoseWithCovarianceStamped.pose.pose
 
+    def robot1_pose_cb(self,PoseWithCovarianceStamped):
+        self.robot1_act_pose = PoseWithCovarianceStamped.pose.pose
+
+    def robot2_pose_cb(self,PoseWithCovarianceStamped):
+        self.robot2_act_pose = PoseWithCovarianceStamped.pose.pose
 
 
 
@@ -134,6 +180,15 @@ class execute_trajectories_node():
         self.robot0_trajectory_received = False
         self.robot1_trajectory_received = False
         self.robot2_trajectory_received = False
+        self.robot0_act_pose = Pose()
+        self.robot1_act_pose = Pose()
+        self.robot2_act_pose = Pose()
+        # rospy.Subscriber("/robot0/amcl_pose", PoseWithCovarianceStamped, self.robot0_pose_cb)
+        # rospy.Subscriber("/robot1/amcl_pose", PoseWithCovarianceStamped, self.robot1_pose_cb)
+        # rospy.Subscriber("/robot2/amcl_pose", PoseWithCovarianceStamped, self.robot2_pose_cb)
+        rospy.Subscriber("/robot0/ground_truth", Odometry, self.robot0_pose_cb)
+        rospy.Subscriber("/robot1/ground_truth", Odometry, self.robot1_pose_cb)
+        rospy.Subscriber("/robot2/ground_truth", Odometry, self.robot2_pose_cb)
 
 
 

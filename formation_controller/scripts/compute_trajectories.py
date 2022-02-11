@@ -45,7 +45,7 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
     robot2_current_angle = robot2_path.phi[0]
     index = 1
 
-    target_vel_lin = 0.25
+    target_vel_lin = 0.1
     w_limit = 0.2
     
     robot0_current_velocity_lin = 0.0
