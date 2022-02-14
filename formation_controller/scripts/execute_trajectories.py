@@ -2,7 +2,7 @@
 
 from cmath import inf
 import rospy
-#from nav_msgs.msg import Path
+import tf
 from mypath import Mypath
 from nav_msgs.msg import Path
 import math
@@ -57,13 +57,7 @@ class execute_trajectories_node():
 
         idx = 0
         while not rospy.is_shutdown() and idx < len(self.robot0_v):
-
-            # e0_x = self.robot0_trajectory.x[idx] - self.robot0_act_pose.position.x
-            # e0_y = self.robot0_trajectory.y[idx] - self.robot0_act_pose.position.y
-            # phi_act = transformations.euler_from_quaternion([self.robot0_act_pose.orientation.x,self.robot0_act_pose.orientation.y,self.robot0_act_pose.orientation.z,self.robot0_act_pose.orientation.w])
-            # e0_z = self.robot0_trajectory.phi[idx] - phi_act[2]
-            
-
+         
             u0_v, u0_w = cartesian_controller(self.robot0_act_pose,self.robot0_trajectory.x[idx],self.robot0_trajectory.y[idx],self.control_rate*self.robot0_w[idx],self.control_rate*self.robot0_v[idx],self.robot0_trajectory.phi[idx])
             u1_v, u1_w = cartesian_controller(self.robot1_act_pose,self.robot1_trajectory.x[idx],self.robot1_trajectory.y[idx],self.control_rate*self.robot1_w[idx],self.control_rate*self.robot1_v[idx],self.robot1_trajectory.phi[idx])
             u2_v, u2_w = cartesian_controller(self.robot2_act_pose,self.robot2_trajectory.x[idx],self.robot2_trajectory.y[idx],self.control_rate*self.robot2_w[idx],self.control_rate*self.robot2_v[idx],self.robot2_trajectory.phi[idx])
@@ -80,6 +74,11 @@ class execute_trajectories_node():
             self.robot2_twist.linear.x = u2_v       # self.robot2_v[idx] * self.control_rate
             self.robot2_twist.angular.z = u2_w      #self.robot2_w[idx] * self.control_rate
             self.robot2_twist_publisher.publish(self.robot2_twist)
+
+            self.target_pose_broadcaster([self.robot0_trajectory.x[idx],self.robot0_trajectory.y[idx],self.robot0_trajectory.phi[idx]], \
+                [self.robot1_trajectory.x[idx],self.robot1_trajectory.y[idx],self.robot1_trajectory.phi[idx]], \
+                [self.robot2_trajectory.x[idx],self.robot2_trajectory.y[idx],self.robot2_trajectory.phi[idx]])
+
             idx += 1
             rate.sleep()
 
@@ -156,8 +155,16 @@ class execute_trajectories_node():
 
 
 
-
-
+    def target_pose_broadcaster(self,robot0_target_pose,robot1_target_pose,robot2_target_pose):
+        self.robot0_target_pose_broadcaster.sendTransform((robot0_target_pose[0], robot0_target_pose[1], 0),
+                     tf.transformations.quaternion_from_euler(0, 0, robot0_target_pose[2]),
+                     rospy.Time.now(), "robot0/target_pose", "map")
+        self.robot1_target_pose_broadcaster.sendTransform((robot1_target_pose[0], robot1_target_pose[1], 0),
+                     tf.transformations.quaternion_from_euler(0, 0, robot1_target_pose[2]),
+                     rospy.Time.now(), "robot1/target_pose", "map")
+        self.robot2_target_pose_broadcaster.sendTransform((robot2_target_pose[0], robot2_target_pose[1], 0),
+                     tf.transformations.quaternion_from_euler(0, 0, robot2_target_pose[2]),
+                     rospy.Time.now(), "robot2/target_pose", "map")
 
 
 
@@ -189,7 +196,9 @@ class execute_trajectories_node():
         rospy.Subscriber("/robot0/ground_truth", Odometry, self.robot0_pose_cb)
         rospy.Subscriber("/robot1/ground_truth", Odometry, self.robot1_pose_cb)
         rospy.Subscriber("/robot2/ground_truth", Odometry, self.robot2_pose_cb)
-
+        self.robot0_target_pose_broadcaster = tf.TransformBroadcaster()
+        self.robot1_target_pose_broadcaster = tf.TransformBroadcaster()
+        self.robot2_target_pose_broadcaster = tf.TransformBroadcaster()
 
 
 
