@@ -6,16 +6,16 @@ import rospy
 
 
 
-def cartesian_controller(act_pose,set_pose_x,set_pose_y,w_target,v_target,phi_target):
-    Kv = 0.07
-    Ky = 0.14
-    Kx = 0.07
+def cartesian_controller(act_pose,set_pose_x,set_pose_y,w_target,v_target,phi_target,id):
+    Kv = 0.3
+    Ky = 0.25
+    Kx = 0.1
     phi_act = transformations.euler_from_quaternion([act_pose .orientation.x,act_pose .orientation.y,act_pose .orientation.z,act_pose .orientation.w])
 
 
     e_x = (set_pose_x-act_pose.position.x)
     e_y = (set_pose_y - act_pose.position.y)
-    rospy.loginfo_throttle(1,[e_x,e_y])
+    rospy.loginfo_throttle(1,[id,e_x,e_y])
     e_local_x = math.cos(phi_act[2]) * e_x + math.sin(phi_act[2]) * e_y
     e_local_y = math.cos(phi_act[2]) * e_y - math.sin(phi_act[2]) * e_x
 

@@ -36,19 +36,19 @@ class execute_trajectories_node():
         e0_phi = inf
         rate = rospy.Rate(self.control_rate)
         idx = 0
-        while (abs(e0_l) > 0.05 or abs(e0_phi) > 0.06) and not rospy.is_shutdown():
+        while (abs(e0_l) > 1.05 or abs(e0_phi) > 0.06) and not rospy.is_shutdown():
             e0_l, e0_phi = l_phi_controller(self.robot0_act_pose,self.robot0_trajectory.x[idx],self.robot0_trajectory.y[idx])
-            self.robot0_twist.linear.x = 0.1 * e0_l
+            self.robot0_twist.linear.x = 0.15 * e0_l
             self.robot0_twist.angular.z = 0.01 * e0_phi
             self.robot0_twist_publisher.publish(self.robot0_twist)
 
             e1_l, e1_phi = l_phi_controller(self.robot1_act_pose,self.robot1_trajectory.x[idx],self.robot1_trajectory.y[idx])
-            self.robot1_twist.linear.x = 0.1 * e1_l
+            self.robot1_twist.linear.x = 0.15 * e1_l
             self.robot1_twist.angular.z = 0.01 * e1_phi
             self.robot1_twist_publisher.publish(self.robot1_twist)
 
             e2_l, e2_phi = l_phi_controller(self.robot2_act_pose,self.robot2_trajectory.x[idx],self.robot2_trajectory.y[idx])
-            self.robot2_twist.linear.x = 0.1 * e2_l
+            self.robot2_twist.linear.x = 0.15 * e2_l
             self.robot2_twist.angular.z = 0.01 * e2_phi
             self.robot2_twist_publisher.publish(self.robot2_twist)
 
@@ -58,10 +58,13 @@ class execute_trajectories_node():
         idx = 0
         while not rospy.is_shutdown() and idx < len(self.robot0_v):
          
-            u0_v, u0_w = cartesian_controller(self.robot0_act_pose,self.robot0_trajectory.x[idx],self.robot0_trajectory.y[idx],self.control_rate*self.robot0_w[idx],self.control_rate*self.robot0_v[idx],self.robot0_trajectory.phi[idx])
-            u1_v, u1_w = cartesian_controller(self.robot1_act_pose,self.robot1_trajectory.x[idx],self.robot1_trajectory.y[idx],self.control_rate*self.robot1_w[idx],self.control_rate*self.robot1_v[idx],self.robot1_trajectory.phi[idx])
-            u2_v, u2_w = cartesian_controller(self.robot2_act_pose,self.robot2_trajectory.x[idx],self.robot2_trajectory.y[idx],self.control_rate*self.robot2_w[idx],self.control_rate*self.robot2_v[idx],self.robot2_trajectory.phi[idx])
-
+            u0_v, u0_w = cartesian_controller(self.robot0_act_pose,self.robot0_trajectory.x[idx],self.robot0_trajectory.y[idx],self.control_rate*self.robot0_w[idx],self.control_rate*self.robot0_v[idx],self.robot0_trajectory.phi[idx],1)
+            u1_v, u1_w = cartesian_controller(self.robot1_act_pose,self.robot1_trajectory.x[idx],self.robot1_trajectory.y[idx],self.control_rate*self.robot1_w[idx],self.control_rate*self.robot1_v[idx],self.robot1_trajectory.phi[idx],1)
+            u2_v, u2_w = cartesian_controller(self.robot2_act_pose,self.robot2_trajectory.x[idx],self.robot2_trajectory.y[idx],self.control_rate*self.robot2_w[idx],self.control_rate*self.robot2_v[idx],self.robot2_trajectory.phi[idx],1)
+            # u1_v = 0.0
+            # u1_w = 0.0
+            # u2_v = 0.0
+            # u2_w = 0.0
 
             self.robot0_twist.linear.x = u0_v   # self.robot0_v[idx] * self.control_rate
             self.robot0_twist.angular.z = u0_w      # self.robot0_w[idx] * self.control_rate
@@ -78,6 +81,8 @@ class execute_trajectories_node():
             self.target_pose_broadcaster([self.robot0_trajectory.x[idx],self.robot0_trajectory.y[idx],self.robot0_trajectory.phi[idx]], \
                 [self.robot1_trajectory.x[idx],self.robot1_trajectory.y[idx],self.robot1_trajectory.phi[idx]], \
                 [self.robot2_trajectory.x[idx],self.robot2_trajectory.y[idx],self.robot2_trajectory.phi[idx]])
+
+            self.actual_pose_broadcaster(self.robot0_act_pose,self.robot1_act_pose,self.robot2_act_pose)
 
             idx += 1
             rate.sleep()
@@ -167,6 +172,21 @@ class execute_trajectories_node():
                      rospy.Time.now(), "robot2/target_pose", "map")
 
 
+    def actual_pose_broadcaster(self,robot0_act_pose,robot1_act_pose,robot2_act_pose):
+        self.robot0_actual_pose_broadcaster.sendTransform((robot0_act_pose.position.x,robot0_act_pose.position.y,0), 
+        (robot0_act_pose.orientation.x,robot0_act_pose.orientation.y,robot0_act_pose.orientation.z,robot0_act_pose.orientation.w),
+        rospy.Time.now(), "robot0/actual_pose", "map")
+
+        self.robot1_actual_pose_broadcaster.sendTransform((robot1_act_pose.position.x,robot1_act_pose.position.y,0), 
+        (robot1_act_pose.orientation.x,robot1_act_pose.orientation.y,robot1_act_pose.orientation.z,robot1_act_pose.orientation.w),
+        rospy.Time.now(), "robot1/actual_pose", "map")
+
+        self.robot2_actual_pose_broadcaster.sendTransform((robot2_act_pose.position.x,robot2_act_pose.position.y,0), 
+        (robot2_act_pose.orientation.x,robot2_act_pose.orientation.y,robot2_act_pose.orientation.z,robot2_act_pose.orientation.w),
+        rospy.Time.now(), "robot2/actual_pose", "map")
+       
+
+
 
     def config(self):
         robot0_trajectory_topic = "robot0/target_trajectory"
@@ -199,7 +219,9 @@ class execute_trajectories_node():
         self.robot0_target_pose_broadcaster = tf.TransformBroadcaster()
         self.robot1_target_pose_broadcaster = tf.TransformBroadcaster()
         self.robot2_target_pose_broadcaster = tf.TransformBroadcaster()
-
+        self.robot0_actual_pose_broadcaster = tf.TransformBroadcaster()
+        self.robot1_actual_pose_broadcaster = tf.TransformBroadcaster()
+        self.robot2_actual_pose_broadcaster = tf.TransformBroadcaster()
 
 
 if __name__=="__main__":
