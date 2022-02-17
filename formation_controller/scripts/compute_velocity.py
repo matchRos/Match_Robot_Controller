@@ -109,7 +109,7 @@ class compute_velocity():
 
 
     def config(self):
-        self.robot0_plan_topic = rospy.get_param('~robot0_plan_topic',"/robot0/move_base_flex/FormationPathPlanner/plan")
+        self.robot0_plan_topic = rospy.get_param('~robot0_plan_topic',"/robot0/move_base_flex/plan")
         self.robot1_plan_topic = rospy.get_param('~robot1_plan_topic',"/robot1/move_base_flex/plan")
         self.robot2_plan_topic = rospy.get_param('~robot2_plan_topic',"/robot2/move_base_flex/plan")
         self.robot0_path = Mypath()
