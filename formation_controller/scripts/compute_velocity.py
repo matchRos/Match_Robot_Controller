@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 from cmath import sqrt
 import rospy
@@ -15,6 +15,14 @@ class compute_velocity():
 
     def __init__(self):
         self.config()
+        self.robot0_path = Mypath()
+        self.robot1_path = Mypath()
+        self.robot2_path = Mypath()
+        self.robot0_path_received = False
+        self.robot1_path_received = False
+        self.robot2_path_received = False
+        self.target_trajectory = Mypath()
+        self.target_pose = Mypath()
         rospy.init_node("compute_velocity_node")
         rospy.loginfo("compute_velocity node running")
         
@@ -104,7 +112,7 @@ class compute_velocity():
         self.target_pose.phi = self.robot0_path.phi[0]
         self.target_pose.x = self.target_pose.x
         
-        print("hello")
+        print("done")
 
 
 
@@ -112,21 +120,8 @@ class compute_velocity():
         self.robot0_plan_topic = rospy.get_param('~robot0_plan_topic',"/robot0/move_base_flex/plan")
         self.robot1_plan_topic = rospy.get_param('~robot1_plan_topic',"/robot1/move_base_flex/plan")
         self.robot2_plan_topic = rospy.get_param('~robot2_plan_topic',"/robot2/move_base_flex/plan")
-        self.robot0_path = Mypath()
-        self.robot1_path = Mypath()
-        self.robot2_path = Mypath()
-        self.robot0_path_received = False
-        self.robot1_path_received = False
-        self.robot2_path_received = False
-        self.target_trajectory = Mypath()
-        self.control_rate = 100.0
-        self.target_pose = Mypath()
+        self.control_rate = rospy.get_param('~control_rate',100)
 
-
-    def PATH(self):
-        x = 0.0
-        y = 0.0
-        phi = 0.0
 
 
 

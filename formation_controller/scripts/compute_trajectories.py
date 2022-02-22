@@ -1,21 +1,23 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 from cmath import sqrt
 import rospy
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
 from mypath import Mypath
-#from tf import transformations
 import math
 import numpy as np
 from scipy.signal import savgol_filter
-#from trajectory_msgs.msg import JointTrajectoryPoint , JointTrajectory
-
+from matplotlib import pyplot as plt
 
     
 
 def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,robot1_v,robot1_w,robot2_v,robot2_w):
-    control_rate = 100.0
+    control_rate = rospy.get_param("~control_rate")
+    target_vel_lin = rospy.get_param("~target_vel_lin")
+    w_limit = rospy.get_param("~w_limit")
+
+
     target_reached = False
     robot0_target_pose = Mypath()
     robot0_target_path = Mypath()
@@ -43,10 +45,6 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
     robot1_current_angle = robot1_path.phi[0]
     robot2_current_angle = robot2_path.phi[0]
     index = 1
-
-    target_vel_lin = 0.05
-    w_limit = 10.0
-    
     robot0_current_velocity_lin = 0.0
     robot1_current_velocity_lin = 0.0
     robot2_current_velocity_lin = 0.0
@@ -240,33 +238,33 @@ def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,r
     # plt.show()
 
 
-    robot0_v_path = [0.0]
-    robot0_phi_path = [robot0_path.phi[0]]
-    robot0_phi_path[0] = math.atan2(robot0_yhat[1]-robot0_yhat[0], robot0_xhat[1]-robot0_xhat[0])
-    robot0_w_path = [0.0]
+    # robot0_v_path = [0.0]
+    # robot0_phi_path = [robot0_path.phi[0]]
+    # robot0_phi_path[0] = math.atan2(robot0_yhat[1]-robot0_yhat[0], robot0_xhat[1]-robot0_xhat[0])
+    # robot0_w_path = [0.0]
 
-    robot1_v_path = [0.0]
-    robot1_phi_path = [robot1_path.phi[0]]
-    robot1_phi_path[0] = math.atan2(robot1_yhat[1]-robot1_yhat[0], robot1_xhat[1]-robot1_xhat[0])
-    robot1_w_path = [0.0]
+    # robot1_v_path = [0.0]
+    # robot1_phi_path = [robot1_path.phi[0]]
+    # robot1_phi_path[0] = math.atan2(robot1_yhat[1]-robot1_yhat[0], robot1_xhat[1]-robot1_xhat[0])
+    # robot1_w_path = [0.0]
 
-    robot2_v_path = [0.0]
-    robot2_phi_path = [robot1_path.phi[0]]
-    robot2_phi_path[0] = math.atan2(robot2_yhat[1]-robot2_yhat[0], robot2_xhat[1]-robot2_xhat[0])
-    robot2_w_path = [0.0]
+    # robot2_v_path = [0.0]
+    # robot2_phi_path = [robot1_path.phi[0]]
+    # robot2_phi_path[0] = math.atan2(robot2_yhat[1]-robot2_yhat[0], robot2_xhat[1]-robot2_xhat[0])
+    # robot2_w_path = [0.0]
 
-    for i in range(1,len(robot0_xhat)):
-        robot0_v_path.append(math.sqrt((robot0_xhat[i]-robot0_xhat[i-1])**2+(robot0_yhat[i]-robot0_yhat[i-1])**2))
-        robot0_phi_path.append(math.atan2(robot0_yhat[i]-robot0_yhat[i-1], robot0_xhat[i]-robot0_xhat[i-1]))
-        robot1_v_path.append(math.sqrt((robot1_xhat[i]-robot1_xhat[i-1])**2+(robot1_yhat[i]-robot1_yhat[i-1])**2))
-        robot1_phi_path.append(math.atan2(robot1_yhat[i]-robot1_yhat[i-1], robot1_xhat[i]-robot1_xhat[i-1]))
-        robot2_v_path.append(math.sqrt((robot2_xhat[i]-robot2_xhat[i-1])**2+(robot2_yhat[i]-robot2_yhat[i-1])**2))
-        robot2_phi_path.append(math.atan2(robot2_yhat[i]-robot2_yhat[i-1], robot2_xhat[i]-robot2_xhat[i-1]))
-        #v_path.append(math.sqrt((target_path.x[i]-target_path.x[i-1])**2+(target_path.y[i]-target_path.y[i-1])**2))
-        #phi_path.append(math.atan2(target_path.y[i]-target_path.y[i-1], target_path.x[i]-target_path.x[i-1]))
-        robot0_w_path.append(robot0_phi_path[i]-robot0_phi_path[i-1])
-        robot1_w_path.append(robot1_phi_path[i]-robot1_phi_path[i-1])
-        robot2_w_path.append(robot2_phi_path[i]-robot2_phi_path[i-1])
+    # for i in range(1,len(robot0_xhat)):
+    #     robot0_v_path.append(math.sqrt((robot0_xhat[i]-robot0_xhat[i-1])**2+(robot0_yhat[i]-robot0_yhat[i-1])**2))
+    #     robot0_phi_path.append(math.atan2(robot0_yhat[i]-robot0_yhat[i-1], robot0_xhat[i]-robot0_xhat[i-1]))
+    #     robot1_v_path.append(math.sqrt((robot1_xhat[i]-robot1_xhat[i-1])**2+(robot1_yhat[i]-robot1_yhat[i-1])**2))
+    #     robot1_phi_path.append(math.atan2(robot1_yhat[i]-robot1_yhat[i-1], robot1_xhat[i]-robot1_xhat[i-1]))
+    #     robot2_v_path.append(math.sqrt((robot2_xhat[i]-robot2_xhat[i-1])**2+(robot2_yhat[i]-robot2_yhat[i-1])**2))
+    #     robot2_phi_path.append(math.atan2(robot2_yhat[i]-robot2_yhat[i-1], robot2_xhat[i]-robot2_xhat[i-1]))
+    #     #v_path.append(math.sqrt((target_path.x[i]-target_path.x[i-1])**2+(target_path.y[i]-target_path.y[i-1])**2))
+    #     #phi_path.append(math.atan2(target_path.y[i]-target_path.y[i-1], target_path.x[i]-target_path.x[i-1]))
+    #     robot0_w_path.append(robot0_phi_path[i]-robot0_phi_path[i-1])
+    #     robot1_w_path.append(robot1_phi_path[i]-robot1_phi_path[i-1])
+    #     robot2_w_path.append(robot2_phi_path[i]-robot2_phi_path[i-1])
     # plt.figure()
     # plt.plot(robot0_v_path)
     # plt.plot(robot1_v_path)

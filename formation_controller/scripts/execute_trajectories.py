@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 import rospy
 import tf
@@ -19,7 +19,7 @@ class execute_trajectories_node():
         rospy.init_node("lyapunov_controller_node")
         rospy.loginfo("lyapunov controller running")
         self.config()
-        self.control_rate = 100
+        
 
 
 
@@ -51,7 +51,8 @@ class execute_trajectories_node():
             self.robot2_twist.angular.z = 0.01 * e2_phi
             self.robot2_twist_publisher.publish(self.robot2_twist)
 
-            #print(e1_l,e1_phi,e2_l,e2_phi)
+            #print(e0_l,e1_l,e1_phi,e2_l,e2_phi)
+            #print(self.robot0_act_pose,self.robot0_trajectory.x[idx],self.robot0_trajectory.y[idx])
 
 
         idx = 0
@@ -60,10 +61,6 @@ class execute_trajectories_node():
             u0_v, u0_w = cartesian_controller(self.robot0_act_pose,self.robot0_trajectory.x[idx],self.robot0_trajectory.y[idx],self.control_rate*self.robot0_w[idx],self.control_rate*self.robot0_v[idx],self.robot0_trajectory.phi[idx],1)
             u1_v, u1_w = cartesian_controller(self.robot1_act_pose,self.robot1_trajectory.x[idx],self.robot1_trajectory.y[idx],self.control_rate*self.robot1_w[idx],self.control_rate*self.robot1_v[idx],self.robot1_trajectory.phi[idx],1)
             u2_v, u2_w = cartesian_controller(self.robot2_act_pose,self.robot2_trajectory.x[idx],self.robot2_trajectory.y[idx],self.control_rate*self.robot2_w[idx],self.control_rate*self.robot2_v[idx],self.robot2_trajectory.phi[idx],1)
-            # u1_v = 0.0
-            # u1_w = 0.0
-            # u2_v = 0.0
-            # u2_w = 0.0
 
             self.robot0_twist.linear.x = u0_v   # self.robot0_v[idx] * self.control_rate
             self.robot0_twist.angular.z = u0_w      # self.robot0_w[idx] * self.control_rate
@@ -188,18 +185,22 @@ class execute_trajectories_node():
 
 
     def config(self):
-        robot0_trajectory_topic = "robot0/target_trajectory"
-        robot1_trajectory_topic = "robot1/target_trajectory"
-        robot2_trajectory_topic = "robot2/target_trajectory"
+        self.control_rate = rospy.get_param("~control_rate")
+        robot0_trajectory_topic = rospy.get_param("~robot0_trajectory_topic")
+        robot1_trajectory_topic = rospy.get_param("~robot1_trajectory_topic")
+        robot2_trajectory_topic = rospy.get_param("~robot2_trajectory_topic")
         rospy.Subscriber(robot0_trajectory_topic, Path, self.robot0_trajectory_cb)
         rospy.Subscriber(robot1_trajectory_topic, Path, self.robot1_trajectory_cb)
         rospy.Subscriber(robot2_trajectory_topic, Path, self.robot2_trajectory_cb)
         self.robot0_trajectory = Mypath()
         self.robot1_trajectory = Mypath()
         self.robot2_trajectory = Mypath()
-        self.robot0_twist_publisher = rospy.Publisher("/robot0/mobile_base_controller/cmd_vel",Twist,queue_size=5)
-        self.robot1_twist_publisher = rospy.Publisher("/robot1/mobile_base_controller/cmd_vel",Twist,queue_size=5)
-        self.robot2_twist_publisher = rospy.Publisher("/robot2/mobile_base_controller/cmd_vel",Twist,queue_size=5)
+        robot0_cmd_vel_topic = rospy.get_param("~robot0_cmd_vel_topic")
+        robot1_cmd_vel_topic = rospy.get_param("~robot1_cmd_vel_topic")
+        robot2_cmd_vel_topic = rospy.get_param("~robot2_cmd_vel_topic")
+        self.robot0_twist_publisher = rospy.Publisher(robot0_cmd_vel_topic,Twist,queue_size=5)
+        self.robot1_twist_publisher = rospy.Publisher(robot1_cmd_vel_topic,Twist,queue_size=5)
+        self.robot2_twist_publisher = rospy.Publisher(robot2_cmd_vel_topic,Twist,queue_size=5)
         self.robot0_twist = Twist()
         self.robot1_twist = Twist()
         self.robot2_twist = Twist()
@@ -209,12 +210,12 @@ class execute_trajectories_node():
         self.robot0_act_pose = Pose()
         self.robot1_act_pose = Pose()
         self.robot2_act_pose = Pose()
-        rospy.Subscriber("/robot0/robot_pose", Pose, self.robot0_pose_cb)
-        rospy.Subscriber("/robot1/robot_pose", Pose, self.robot1_pose_cb)
-        rospy.Subscriber("/robot2/robot_pose", Pose, self.robot2_pose_cb)
-        #rospy.Subscriber("/robot0/ground_truth", Odometry, self.robot0_pose_cb)
-        #rospy.Subscriber("/robot1/ground_truth", Odometry, self.robot1_pose_cb)
-        #rospy.Subscriber("/robot2/ground_truth", Odometry, self.robot2_pose_cb)
+        robot0_pose_topic = rospy.get_param("~robot0_pose_topic")
+        robot1_pose_topic = rospy.get_param("~robot1_pose_topic")
+        robot2_pose_topic = rospy.get_param("~robot2_pose_topic")
+        rospy.Subscriber(robot0_pose_topic, Pose, self.robot0_pose_cb)
+        rospy.Subscriber(robot1_pose_topic, Pose, self.robot1_pose_cb)
+        rospy.Subscriber(robot2_pose_topic, Pose, self.robot2_pose_cb)
         self.robot0_target_pose_broadcaster = tf.TransformBroadcaster()
         self.robot1_target_pose_broadcaster = tf.TransformBroadcaster()
         self.robot2_target_pose_broadcaster = tf.TransformBroadcaster()

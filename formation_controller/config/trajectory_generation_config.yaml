@@ -1,0 +1,23 @@
+control_rate : 100.0
+target_vel_lin : 0.1
+w_limit : 1.0
+
+
+
+## topics
+
+robot0_plan_topic : /robot0/move_base_flex/plan
+robot1_plan_topic : /robot1/move_base_flex/plan
+robot2_plan_topic : /robot2/move_base_flex/plan
+robot0_trajectory_topic : robot0/target_trajectory
+robot1_trajectory_topic : robot1/target_trajectory
+robot2_trajectory_topic : robot2/target_trajectory
+robot0_cmd_vel_topic: /robot0/mobile_base_controller/cmd_vel
+robot1_cmd_vel_topic: /robot1/mobile_base_controller/cmd_vel
+robot2_cmd_vel_topic: /robot2/mobile_base_controller/cmd_vel
+#robot0_pose_topic : /robot0/robot_pose
+#robot1_pose_topic : /robot1/robot_pose
+#robot2_pose_topic : /robot2/robot_pose
+robot0_pose_topic: /robot0/amcl_pose
+robot1_pose_topic: /robot1/amcl_pose
+robot2_pose_topic: /robot2/amcl_pose
