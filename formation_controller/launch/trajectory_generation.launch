@@ -10,7 +10,7 @@
     </node>
 
 
-    <node name="execute_trajectories" type="execute_trajectories.py" pkg="formation_controller" output="screen">
+    <node name="execute_trajectories" type="execute_trajectories_dynamic.py" pkg="formation_controller" output="screen">
             <rosparam command="load" file="$(find formation_controller)/config/trajectory_generation_config.yaml"/>
     </node>
 

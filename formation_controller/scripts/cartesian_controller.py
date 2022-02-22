@@ -6,7 +6,7 @@ import rospy
 
 
 
-def cartesian_controller(act_pose,set_pose_x,set_pose_y,w_target,v_target,phi_target,id):
+def cartesian_controller(act_pose,set_pose_x,set_pose_y,w_target,v_target,phi_target):
     Kv = 0.3
     Ky = 0.25
     Kx = 0.1

@@ -7,3 +7,12 @@ class Mypath:
     x = None
     y = None
     phi = None 
+
+
+
+class MyTrajectory:
+    x = None
+    y = None
+    phi = None 
+    v = None
+    w = None
