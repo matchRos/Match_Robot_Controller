@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 
     
 
-def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v,robot0_w,robot1_v,robot1_w,robot2_v,robot2_w):
+def compute_trajectories(robot0_path,robot1_path,robot2_path,robot0_v):
     control_rate = rospy.get_param("~control_rate")
     target_vel_lin = rospy.get_param("~target_vel_lin")
     w_limit = rospy.get_param("~w_limit")

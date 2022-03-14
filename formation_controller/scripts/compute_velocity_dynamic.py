@@ -6,7 +6,6 @@ from nav_msgs.msg import Path
 from mypath import Mypath
 from compute_trajectories import compute_trajectories
 from tf import transformations
-import matplotlib.pyplot as plt
 import math
 
 class compute_velocity():
@@ -14,6 +13,8 @@ class compute_velocity():
 
 
     def __init__(self):
+        rospy.init_node("compute_velocity_node")
+        rospy.loginfo("compute_velocity node running")
         self.config()
         self.robot0_path = Mypath()
         self.robot1_path = Mypath()
@@ -23,12 +24,7 @@ class compute_velocity():
         self.robot2_path_received = False
         self.target_trajectory = Mypath()
         self.target_pose = Mypath()
-        rospy.init_node("compute_velocity_node")
-        rospy.loginfo("compute_velocity node running")
-        
-        rospy.Subscriber(self.robot0_plan_topic, Path, self.robot0_plan_cb)
-        rospy.Subscriber(self.robot1_plan_topic, Path, self.robot1_plan_cb)
-        rospy.Subscriber(self.robot2_plan_topic, Path, self.robot2_plan_cb)
+
         self.run()
         rospy.spin()
 
@@ -50,11 +46,11 @@ class compute_velocity():
             robot_path.phi.append(phi[2])
         
         for i in range(1,path_len-1):
-            robot_path.w.append(math.sqrt((robot_path.x[i+1]-robot_path.x[i])**2 + (robot_path.y[i+1]-robot_path.y[i])**2 ))
+            robot_path.v.append(math.sqrt((robot_path.x[i+1]-robot_path.x[i])**2 + (robot_path.y[i+1]-robot_path.y[i])**2 ))
             robot_path.w.append(robot_path.phi[i+1]-robot_path.phi[i])
         
         self.robot_paths[robot_id] = robot_path
-        self.robot0_path_received = True
+        self.robotX_path_received[robot_id] = True
 
 
 
@@ -65,19 +61,21 @@ class compute_velocity():
 
 
         while not rospy.is_shutdown():
-            if self.robot0_path_received == True & self.robot1_path_received == True & self.robot1_path_received == True:
+            number_of_plaths_reveived = 0
+            for i in range(0,self.number_of_robots):
+                if self.robotX_path_received[i] == True:
+                    number_of_plaths_reveived += 1
+            
+            if number_of_plaths_reveived == self.number_of_robots:
                 rospy.loginfo_once("received all paths")
                 break
             else:
-                rospy.loginfo("waiting for paths")
+                # rospy.loginfo("waiting for paths: ", number_of_plaths_reveived, " of ", self.number_of_robots)
+                print("waiting for paths: ", number_of_plaths_reveived, " of ", self.number_of_robots)
                 rospy.sleep(1)
 
-        compute_trajectories(self.robot0_path,self.robot1_path,self.robot2_path,self.robot0_v,self.robot0_w,self.robot1_v,self.robot1_w,self.robot2_v,self.robot2_w)
-                # set start pose
-        self.target_pose.x = self.robot0_path.x[0]
-        self.target_pose.y = self.robot0_path.y[0]
-        self.target_pose.phi = self.robot0_path.phi[0]
-        self.target_pose.x = self.target_pose.x
+        compute_trajectories(self.robot_paths[0],self.robot_paths[1],self.robot_paths[2],self.robot_paths[0].v)
+
         
         print("done")
 
@@ -86,6 +84,7 @@ class compute_velocity():
     def config(self):
 
         self.robot_paths = []
+        self.robotX_path_received = []
  
  
         self.number_of_robots = rospy.get_param("~number_of_robots")
@@ -95,11 +94,8 @@ class compute_velocity():
             rospy.Subscriber(robotX_plan_topic, Path, self.plan_cb, i)
 
             self.robot_paths.append(Mypath())
+            self.robotX_path_received.append(False)
 
-
-        self.robot0_plan_topic = rospy.get_param('~robot0_plan_topic',"/robot0/move_base_flex/plan")
-        self.robot1_plan_topic = rospy.get_param('~robot1_plan_topic',"/robot1/move_base_flex/plan")
-        self.robot2_plan_topic = rospy.get_param('~robot2_plan_topic',"/robot2/move_base_flex/plan")
         self.control_rate = rospy.get_param('~control_rate',100)
 
 
