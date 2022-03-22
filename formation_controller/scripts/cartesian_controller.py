@@ -7,9 +7,9 @@ import rospy
 
 
 def cartesian_controller(act_pose,set_pose_x,set_pose_y,w_target,v_target,phi_target):
-    Kv = 0.3
-    Ky = 0.25
-    Kx = 0.1
+    Kv = 0.5
+    Ky = 0.45
+    Kx = 0.3
     phi_act = transformations.euler_from_quaternion([act_pose .orientation.x,act_pose .orientation.y,act_pose .orientation.z,act_pose .orientation.w])
 
 
