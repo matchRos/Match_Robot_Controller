@@ -2,11 +2,11 @@
 from tf import transformations
 import math
 import rospy
+from geometry_msgs.msg import Pose, Twist
 
 
 
-
-def cartesian_controller(actual_pose,target_pose,target_velocity):
+def cartesian_controller(actual_pose = Pose(),target_pose = Pose(),target_velocity = Twist()):
     Kv = 0.5
     Ky = 0.45
     Kx = 0.3
