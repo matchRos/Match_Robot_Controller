@@ -1,12 +1,13 @@
 #! /usr/bin/env python3
 
+from turtle import pos
 import rospy
 import tf
 from tf import transformations
 from mypath import MyTrajectory
 from nav_msgs.msg import Path
 import math
-from geometry_msgs.msg import Twist, PoseWithCovarianceStamped, Pose
+from geometry_msgs.msg import Twist, Pose
 from cartesian_controller import cartesian_controller
 
 
@@ -138,8 +139,9 @@ class execute_trajectories_node():
         rospy.loginfo("trajecory " + str(robot_index) +" received")
 
 
-    def robot_pose_cb(self,Pose,robot_index):
-        self.robot_poses[robot_index] = Pose.pose.pose
+    def robot_pose_cb(self,pose_msg=Pose(),robot_index=0):
+        self.robot_poses[robot_index] = pose_msg
+        
 
 
     def target_pose_broadcaster(self,target_pose,robot_id):
@@ -177,7 +179,7 @@ class execute_trajectories_node():
             param = "~robot" + str(i) + "_pose_topic"
             robotX_pose_topic = rospy.get_param(param)
             self.robot_poses.append(Pose())
-            rospy.Subscriber(robotX_pose_topic, PoseWithCovarianceStamped, self.robot_pose_cb, i)
+            rospy.Subscriber(robotX_pose_topic, Pose, self.robot_pose_cb, i)
 
             param = "~robot" + str(i) + "_cmd_vel_topic"
             topic = rospy.get_param(param)
